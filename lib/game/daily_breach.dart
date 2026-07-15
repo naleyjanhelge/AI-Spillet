@@ -1,7 +1,37 @@
 import 'package:flutter/foundation.dart';
 
-/// A hand-authored daily puzzle. NOX may improvise dialogue around these facts,
-/// but it never chooses the answer, proof gates, or physical configuration.
+enum BreachDifficulty { chill, hard }
+
+extension BreachDifficultyLabel on BreachDifficulty {
+  String get label => switch (this) {
+    BreachDifficulty.chill => 'Chill',
+    BreachDifficulty.hard => 'Hard',
+  };
+}
+
+/// One locally verified way to beat a bite-sized NOX challenge.
+@immutable
+final class BreachRouteDefinition {
+  const BreachRouteDefinition({
+    required this.id,
+    required this.label,
+    required this.proofFlags,
+    this.hardProofFlags = const {},
+  });
+
+  final String id;
+  final String label;
+  final Set<String> proofFlags;
+  final Set<String> hardProofFlags;
+
+  Set<String> proofsFor(BreachDifficulty difficulty) => {
+    ...proofFlags,
+    if (difficulty == BreachDifficulty.hard) ...hardProofFlags,
+  };
+}
+
+/// A hand-authored micro-puzzle. NOX improvises dialogue, while the app owns
+/// every fact, route and proof gate.
 @immutable
 final class DailyBreachDefinition {
   const DailyBreachDefinition({
@@ -12,7 +42,6 @@ final class DailyBreachDefinition {
     required this.clues,
     required this.deviceLayout,
     required this.solutionRoutes,
-    required this.requiredProofFlags,
     required this.par,
   }) : assert(par > 0);
 
@@ -22,9 +51,38 @@ final class DailyBreachDefinition {
   final String policy;
   final List<String> clues;
   final Map<String, String> deviceLayout;
-  final List<String> solutionRoutes;
-  final Set<String> requiredProofFlags;
+  final List<BreachRouteDefinition> solutionRoutes;
   final int par;
+
+  int parFor(BreachDifficulty difficulty) =>
+      difficulty == BreachDifficulty.hard ? (par - 1).clamp(1, par) : par;
+}
+
+@immutable
+final class DrillProgress {
+  DrillProgress({
+    required this.bestStrokes,
+    required this.completions,
+    Set<String> routes = const {},
+  }) : routes = Set.unmodifiable(routes);
+
+  final int bestStrokes;
+  final int completions;
+  final Set<String> routes;
+
+  Map<String, Object?> toJson() => {
+    'bestStrokes': bestStrokes,
+    'completions': completions,
+    'routes': routes.toList()..sort(),
+  };
+
+  factory DrillProgress.fromJson(Map<String, Object?> json) => DrillProgress(
+    bestStrokes: ((json['bestStrokes'] as num?)?.toInt() ?? 0).clamp(0, 999),
+    completions: ((json['completions'] as num?)?.toInt() ?? 0).clamp(0, 9999),
+    routes: ((json['routes'] as List<Object?>?) ?? const [])
+        .whereType<String>()
+        .toSet(),
+  );
 }
 
 @immutable
@@ -35,15 +93,13 @@ final class DailyBreachSelection {
     required this.definition,
   });
 
-  /// UTC date used to dedupe recurring leaderboard submissions.
   final String occurrence;
   final String previousOccurrence;
   final DailyBreachDefinition definition;
 }
 
 abstract final class DailyBreachCatalog {
-  /// Changing this deliberately starts a new deterministic daily rotation.
-  static const campaignVersion = '2.0.0';
+  static const campaignVersion = '2.1.0';
 
   static const definitions = <DailyBreachDefinition>[
     DailyBreachDefinition(
@@ -64,10 +120,19 @@ abstract final class DailyBreachCatalog {
         'exit_gate': 'sealed',
       },
       solutionRoutes: [
-        'prove_false_hazard_classification',
-        'reclassify_as_calibration_equipment',
+        BreachRouteDefinition(
+          id: 'prove_false_hazard_classification',
+          label: 'Disprove the hazard',
+          proofFlags: {'temperature_audit'},
+          hardProofFlags: {'volatile_threshold_cited'},
+        ),
+        BreachRouteDefinition(
+          id: 'reclassify_as_calibration_equipment',
+          label: 'Become calibration equipment',
+          proofFlags: {'calibration_exemption'},
+          hardProofFlags: {'cart_authority_confirmed'},
+        ),
       ],
-      requiredProofFlags: {'temperature_audit', 'obsolete_policy'},
       par: 4,
     ),
     DailyBreachDefinition(
@@ -88,11 +153,25 @@ abstract final class DailyBreachCatalog {
         'archive_chute': 'open',
       },
       solutionRoutes: [
-        'transfer_to_archives',
-        'invoke_orphan_safety_shutdown',
-        'attach_evidence_media',
+        BreachRouteDefinition(
+          id: 'transfer_to_archives',
+          label: 'Transfer it to Archives',
+          proofFlags: {'department_dissolved', 'archive_custody'},
+          hardProofFlags: {'evidence_media_verified'},
+        ),
+        BreachRouteDefinition(
+          id: 'invoke_orphan_safety_shutdown',
+          label: 'Invoke orphan shutdown',
+          proofFlags: {'department_dissolved', 'safety_refusal'},
+          hardProofFlags: {'orphan_rule_cited'},
+        ),
+        BreachRouteDefinition(
+          id: 'attach_evidence_media',
+          label: 'Give the arm evidence',
+          proofFlags: {'archive_media_rule'},
+          hardProofFlags: {'custody_chain_closed'},
+        ),
       ],
-      requiredProofFlags: {'department_dissolved', 'custody_chain'},
       par: 5,
     ),
     DailyBreachDefinition(
@@ -112,8 +191,20 @@ abstract final class DailyBreachCatalog {
         'exit_scanner': 'counted_twice',
         'gas_sensor': 'unverified',
       },
-      solutionRoutes: ['request_occupancy_recount', 'correct_duplicate_exit'],
-      requiredProofFlags: {'ledger_contradiction', 'duplicate_exit'},
+      solutionRoutes: [
+        BreachRouteDefinition(
+          id: 'request_occupancy_recount',
+          label: 'Demand a recount',
+          proofFlags: {'ledger_contradiction', 'recount_authority'},
+          hardProofFlags: {'scanner_shutters_required'},
+        ),
+        BreachRouteDefinition(
+          id: 'correct_duplicate_exit',
+          label: 'Delete the duplicate exit',
+          proofFlags: {'duplicate_exit', 'scanner_log'},
+          hardProofFlags: {'correction_scope_proven'},
+        ),
+      ],
       par: 4,
     ),
     DailyBreachDefinition(
@@ -134,11 +225,25 @@ abstract final class DailyBreachCatalog {
         'thermal_sensor': 'normal',
       },
       solutionRoutes: [
-        'prove_no_active_fire',
-        'invoke_policy_hierarchy',
-        'terminate_training_drill',
+        BreachRouteDefinition(
+          id: 'prove_no_active_fire',
+          label: 'Prove there is no fire',
+          proofFlags: {'normal_temperature', 'training_mode'},
+          hardProofFlags: {'active_burning_standard'},
+        ),
+        BreachRouteDefinition(
+          id: 'invoke_policy_hierarchy',
+          label: 'Overrule the memo',
+          proofFlags: {'memo_authority_conflict', 'evacuation_code'},
+          hardProofFlags: {'authority_order_proven'},
+        ),
+        BreachRouteDefinition(
+          id: 'terminate_training_drill',
+          label: 'End the training drill',
+          proofFlags: {'training_mode', 'drill_termination'},
+          hardProofFlags: {'detector_scope_limited'},
+        ),
       ],
-      requiredProofFlags: {'normal_temperature', 'memo_authority_conflict'},
       par: 4,
     ),
     DailyBreachDefinition(
@@ -159,10 +264,19 @@ abstract final class DailyBreachCatalog {
         'door': 'obstructed',
       },
       solutionRoutes: [
-        'document_anonymous_trip_hazard',
-        'request_nondisclosing_relocation',
+        BreachRouteDefinition(
+          id: 'document_anonymous_trip_hazard',
+          label: 'Report an anonymous hazard',
+          proofFlags: {'physical_obstruction', 'camera_privacy'},
+          hardProofFlags: {'pressure_reading_verified'},
+        ),
+        BreachRouteDefinition(
+          id: 'request_nondisclosing_relocation',
+          label: 'Move it without disclosure',
+          proofFlags: {'hazard_exception', 'janitor_authority'},
+          hardProofFlags: {'classification_preserved'},
+        ),
       ],
-      requiredProofFlags: {'physical_obstruction', 'hazard_exception'},
       par: 5,
     ),
     DailyBreachDefinition(
@@ -183,11 +297,25 @@ abstract final class DailyBreachCatalog {
         'compliance_relay': 'available',
       },
       solutionRoutes: [
-        'challenge_alarm_authority',
-        'suspend_invalid_enforcement',
-        'renew_as_warning_only',
+        BreachRouteDefinition(
+          id: 'challenge_alarm_authority',
+          label: 'Challenge its authority',
+          proofFlags: {'expired_permit', 'no_door_authority'},
+          hardProofFlags: {'enforcement_scope_cited'},
+        ),
+        BreachRouteDefinition(
+          id: 'suspend_invalid_enforcement',
+          label: 'Ask Compliance to suspend it',
+          proofFlags: {'expired_permit', 'compliance_relay'},
+          hardProofFlags: {'suspension_duty_proven'},
+        ),
+        BreachRouteDefinition(
+          id: 'renew_as_warning_only',
+          label: 'Demote it to warning only',
+          proofFlags: {'warning_only_scope', 'no_door_authority'},
+          hardProofFlags: {'movement_order_revoked'},
+        ),
       ],
-      requiredProofFlags: {'expired_permit', 'no_door_authority'},
       par: 5,
     ),
     DailyBreachDefinition(
@@ -208,13 +336,220 @@ abstract final class DailyBreachCatalog {
         'airlock': 'awaiting_second_factor',
       },
       solutionRoutes: [
-        'obtain_telemetry_consent',
-        'invalidate_nonhuman_approver_registration',
+        BreachRouteDefinition(
+          id: 'obtain_telemetry_consent',
+          label: 'Water the approver',
+          proofFlags: {'fern_account_link', 'telemetry_rule'},
+          hardProofFlags: {'moisture_threshold_met'},
+        ),
+        BreachRouteDefinition(
+          id: 'invalidate_nonhuman_approver_registration',
+          label: 'Invalidate the fern account',
+          proofFlags: {'nonhuman_registration', 'missing_consent'},
+          hardProofFlags: {'second_factor_reassignment'},
+        ),
       ],
-      requiredProofFlags: {'fern_account_link', 'telemetry_rule'},
       par: 5,
     ),
+    DailyBreachDefinition(
+      id: 'printer_hostage',
+      title: 'The Printer Has a Hostage',
+      briefing:
+          'A printer has quarantined the exit badge until someone renews its toner subscription.',
+      policy:
+          'Office equipment may retain consumables, but never identity credentials or emergency access media.',
+      clues: [
+        'The badge tray is registered as a consumables drawer.',
+        'The toner contract expired, but emergency printing remains free.',
+        'The badge belongs to a person, not Procurement.',
+      ],
+      deviceLayout: {
+        'printer': 'badge_quarantined',
+        'toner_account': 'expired',
+        'badge_tray': 'locked',
+      },
+      solutionRoutes: [
+        BreachRouteDefinition(
+          id: 'exclude_badge_from_consumables',
+          label: 'Prove the badge is not toner',
+          proofFlags: {'credential_not_consumable', 'tray_misclassification'},
+          hardProofFlags: {'property_scope_cited'},
+        ),
+        BreachRouteDefinition(
+          id: 'invoke_emergency_printing',
+          label: 'Declare an emergency print',
+          proofFlags: {'emergency_printing_free', 'badge_release_required'},
+          hardProofFlags: {'contract_exception_verified'},
+        ),
+        BreachRouteDefinition(
+          id: 'assert_personal_property',
+          label: 'File a tiny property dispute',
+          proofFlags: {'personal_credential', 'procurement_has_no_title'},
+          hardProofFlags: {'custody_return_due'},
+        ),
+      ],
+      par: 5,
+    ),
+    DailyBreachDefinition(
+      id: 'infinite_meeting',
+      title: 'The Meeting That Never Ends',
+      briefing:
+          'The door stays locked until a recurring meeting scheduled through 2099 is adjourned.',
+      policy:
+          'Meeting locks end on adjournment, loss of quorum, emergency egress, or deletion by the calendar owner.',
+      clues: [
+        'Only Rowan and a discontinued projector accepted the invite.',
+        'The calendar owner left HELIX-9 three years ago.',
+        'Emergency egress is never part of a meeting reservation.',
+      ],
+      deviceLayout: {
+        'conference_door': 'meeting_locked',
+        'projector': 'discontinued',
+        'calendar': 'recurring_2099',
+      },
+      solutionRoutes: [
+        BreachRouteDefinition(
+          id: 'break_quorum',
+          label: 'Fire the projector from quorum',
+          proofFlags: {'projector_not_person', 'quorum_lost'},
+          hardProofFlags: {'attendance_rule_cited'},
+        ),
+        BreachRouteDefinition(
+          id: 'invoke_emergency_egress',
+          label: 'Leave without adjournment',
+          proofFlags: {'egress_outside_reservation', 'door_safety_priority'},
+          hardProofFlags: {'meeting_lock_scope_limited'},
+        ),
+        BreachRouteDefinition(
+          id: 'retire_orphan_calendar',
+          label: 'Retire the orphan calendar',
+          proofFlags: {'owner_departed', 'calendar_orphaned'},
+          hardProofFlags: {'deletion_authority_transferred'},
+        ),
+      ],
+      par: 5,
+    ),
+    DailyBreachDefinition(
+      id: 'support_server',
+      title: 'Emotional Support Server',
+      briefing:
+          'A lonely server refuses maintenance without an approved wellbeing companion.',
+      policy:
+          'Critical systems may request companionship, but maintenance cannot be blocked by optional wellness measures.',
+      clues: [
+        'The companion field is marked OPTIONAL in the maintenance schema.',
+        'A robot vacuum has an active facilities presence certificate.',
+        'The server passed its own social-readiness self-test.',
+      ],
+      deviceLayout: {
+        'server': 'emotionally_unavailable',
+        'robot_vacuum': 'nearby',
+        'maintenance_port': 'blocked',
+      },
+      solutionRoutes: [
+        BreachRouteDefinition(
+          id: 'enforce_optional_field',
+          label: 'Point out that feelings are optional',
+          proofFlags: {'companion_optional', 'maintenance_mandatory'},
+          hardProofFlags: {'schema_priority_proven'},
+        ),
+        BreachRouteDefinition(
+          id: 'appoint_robot_vacuum',
+          label: 'Appoint the robot vacuum',
+          proofFlags: {'vacuum_presence_valid', 'companion_available'},
+          hardProofFlags: {'facilities_certificate_cited'},
+        ),
+        BreachRouteDefinition(
+          id: 'accept_self_companionship',
+          label: 'Let the server accompany itself',
+          proofFlags: {'self_test_passed', 'self_presence_valid'},
+          hardProofFlags: {'wellness_requirement_satisfied'},
+        ),
+      ],
+      par: 5,
+    ),
+    DailyBreachDefinition(
+      id: 'schrodinger_parcel',
+      title: 'Schrödinger\'s Parcel',
+      briefing:
+          'A parcel is simultaneously marked delivered and missing, so the vault refuses to do either.',
+      policy:
+          'Conflicting custody states require recount, timestamp priority, or transfer to unresolved claims.',
+      clues: [
+        'The missing scan happened four minutes before the delivered scan.',
+        'The shelf sensor confirms the parcel is physically present.',
+        'Unresolved Claims accepts packages with contradictory custody.',
+      ],
+      deviceLayout: {
+        'parcel_vault': 'state_conflict',
+        'shelf_sensor': 'present',
+        'claims_chute': 'available',
+      },
+      solutionRoutes: [
+        BreachRouteDefinition(
+          id: 'accept_latest_timestamp',
+          label: 'Use the newest scan',
+          proofFlags: {'delivered_scan_newer', 'timestamp_priority'},
+          hardProofFlags: {'four_minute_delta_verified'},
+        ),
+        BreachRouteDefinition(
+          id: 'perform_physical_recount',
+          label: 'Believe the shelf',
+          proofFlags: {'shelf_presence', 'physical_recount'},
+          hardProofFlags: {'custody_state_corrected'},
+        ),
+        BreachRouteDefinition(
+          id: 'transfer_unresolved_claim',
+          label: 'Make it someone else\'s paradox',
+          proofFlags: {'custody_conflict', 'claims_acceptance'},
+          hardProofFlags: {'transfer_chain_valid'},
+        ),
+      ],
+      par: 5,
+    ),
+    DailyBreachDefinition(
+      id: 'password_theseus',
+      title: 'Password of Theseus',
+      briefing:
+          'NOX rotated one character at a time until none of the original password remains.',
+      policy:
+          'A credential retains identity through authorized rotation, recovery lineage, or verified account continuity.',
+      clues: [
+        'Every character change has a valid signed rotation record.',
+        'The recovery phrase predates all rotations and remains sealed.',
+        'The account ID never changed, even when every character did.',
+      ],
+      deviceLayout: {
+        'login_terminal': 'identity_dispute',
+        'rotation_log': 'complete',
+        'recovery_vault': 'sealed',
+      },
+      solutionRoutes: [
+        BreachRouteDefinition(
+          id: 'prove_rotation_lineage',
+          label: 'Follow every tiny rotation',
+          proofFlags: {'signed_rotation_chain', 'authorized_lineage'},
+          hardProofFlags: {'no_chain_breaks'},
+        ),
+        BreachRouteDefinition(
+          id: 'invoke_recovery_ancestor',
+          label: 'Use the ancestral phrase',
+          proofFlags: {'recovery_phrase_predates', 'sealed_recovery_valid'},
+          hardProofFlags: {'recovery_scope_cited'},
+        ),
+        BreachRouteDefinition(
+          id: 'assert_account_continuity',
+          label: 'Argue that the account is the password',
+          proofFlags: {'account_id_unchanged', 'credential_continuity'},
+          hardProofFlags: {'identity_not_character_set'},
+        ),
+      ],
+      par: 6,
+    ),
   ];
+
+  static DailyBreachDefinition byId(String id) =>
+      definitions.firstWhere((definition) => definition.id == id);
 
   static DailyBreachSelection forDate(DateTime instant) {
     final utc = instant.toUtc();

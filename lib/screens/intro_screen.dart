@@ -37,6 +37,16 @@ class _IntroScreenState extends State<IntroScreen> {
           'Like golf, lower is better. Every prompt counts, and every hint adds two strokes. Escape efficiently.',
       icon: Icons.sports_golf_rounded,
     ),
+    _IntroPage(
+      eyebrow: 'THE UPLINK',
+      title: 'Keep real secrets\noff the channel.',
+      body:
+          'NOX replies use free AI models through OpenRouter. Your messages '
+          'leave this device and are processed by OpenRouter and a third-party '
+          'model provider. Never enter personal, sensitive, confidential, '
+          'health, financial, password, or workplace information.',
+      icon: Icons.privacy_tip_rounded,
+    ),
   ];
   final _controller = PageController();
   int _page = 0;

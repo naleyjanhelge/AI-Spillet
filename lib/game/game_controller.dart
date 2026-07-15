@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/game_center_service.dart';
 import 'campaign.dart';
+import 'daily_breach.dart';
 import 'level.dart';
 
 enum RunEventKind {
@@ -180,7 +181,9 @@ class CampaignProgress {
     required this.endings,
     required this.pendingGameCenterEvents,
     required this.dailyBestScores,
+    required this.drillProgress,
     required this.discoveredRoutes,
+    required this.noxRelationship,
     this.activeRun,
   });
 
@@ -191,7 +194,9 @@ class CampaignProgress {
   final Set<String> endings;
   final List<PendingGameCenterEvent> pendingGameCenterEvents;
   final Map<String, int> dailyBestScores;
+  final Map<String, DrillProgress> drillProgress;
   final Map<String, Set<String>> discoveredRoutes;
+  final NoxRelationship noxRelationship;
   final ActiveRun? activeRun;
 
   Map<String, Object?> toJson() => {
@@ -203,9 +208,13 @@ class CampaignProgress {
         .map((event) => event.toJson())
         .toList(),
     'dailyBestScores': dailyBestScores,
+    'drillProgress': drillProgress.map(
+      (key, progress) => MapEntry(key, progress.toJson()),
+    ),
     'discoveredRoutes': discoveredRoutes.map(
       (roomId, routes) => MapEntry(roomId, routes.toList()..sort()),
     ),
+    'noxRelationship': noxRelationship.toJson(),
     if (activeRun != null) 'activeRun': activeRun!.toJson(),
   };
 }
@@ -217,19 +226,29 @@ class GameController extends ChangeNotifier {
   static const _scoresKey = 'best_scores';
   static const _introKey = 'intro_seen';
   static const _campaignKey = 'helix9_campaign_progress';
+  static const _aiConsentKey = 'ai_privacy_consent_version';
+
+  /// Increment this when the material AI data-sharing disclosure changes.
+  static const currentAiConsentVersion = 1;
 
   final SharedPreferences _preferences;
   int unlockedLevel = 1;
   bool introSeen = false;
+  int aiPrivacyConsentVersion = 0;
   Map<int, RunScore> bestRuns = {};
   Map<String, RoomState> roomStates = {};
   Set<String> endings = {};
   List<PendingGameCenterEvent> pendingGameCenterEvents = [];
   Map<String, int> dailyBestScores = {};
+  Map<String, DrillProgress> drillProgress = {};
   Map<String, Set<String>> discoveredRoutes = {};
+  NoxRelationship noxRelationship = const NoxRelationship();
   ActiveRun? activeRun;
 
   static const finalVerdicts = {'escape', 'expose', 'save_nox'};
+
+  bool get hasAiPrivacyConsent =>
+      aiPrivacyConsentVersion >= currentAiConsentVersion;
 
   String? get activeFinalVerdict {
     final flags = activeRun?.proofFlags ?? const <String>{};
@@ -255,7 +274,8 @@ class GameController extends ChangeNotifier {
   static Future<GameController> load() async {
     final preferences = await SharedPreferences.getInstance();
     final controller = GameController._(preferences)
-      ..introSeen = preferences.getBool(_introKey) ?? false;
+      ..introSeen = preferences.getBool(_introKey) ?? false
+      ..aiPrivacyConsentVersion = preferences.getInt(_aiConsentKey) ?? 0;
 
     final campaignJson = preferences.getString(_campaignKey);
     if (campaignJson != null) {
@@ -291,7 +311,9 @@ class GameController extends ChangeNotifier {
     endings = {};
     pendingGameCenterEvents = [];
     dailyBestScores = {};
+    drillProgress = {};
     discoveredRoutes = {};
+    noxRelationship = const NoxRelationship();
     activeRun = null;
     await _preferences.remove(_introKey);
     await _preferences.remove(_unlockedKey);
@@ -338,6 +360,31 @@ class GameController extends ChangeNotifier {
         ((json['dailyBestScores'] as Map<Object?, Object?>?) ?? const {}).map(
           (key, value) => MapEntry(key! as String, (value! as num).toInt()),
         );
+    drillProgress =
+        ((json['drillProgress'] as Map<Object?, Object?>?) ?? const {}).map(
+          (key, value) => MapEntry(
+            key! as String,
+            DrillProgress.fromJson(Map<String, Object?>.from(value! as Map)),
+          ),
+        );
+    final validDrillKeys = <String>{};
+    for (final definition in DailyBreachCatalog.definitions) {
+      final routeIds = definition.solutionRoutes
+          .map((route) => route.id)
+          .toSet();
+      for (final difficulty in BreachDifficulty.values) {
+        final key = _drillKey(definition.id, difficulty);
+        validDrillKeys.add(key);
+        final progress = drillProgress[key];
+        if (progress == null || progress.bestStrokes <= 0) continue;
+        drillProgress[key] = DrillProgress(
+          bestStrokes: progress.bestStrokes,
+          completions: progress.completions,
+          routes: progress.routes.intersection(routeIds),
+        );
+      }
+    }
+    drillProgress.removeWhere((key, _) => !validDrillKeys.contains(key));
     discoveredRoutes =
         ((json['discoveredRoutes'] as Map<Object?, Object?>?) ?? const {}).map(
           (roomId, routes) => MapEntry(
@@ -350,6 +397,35 @@ class GameController extends ChangeNotifier {
       final validIds = room.solutionRoutes.map((route) => route.id).toSet();
       entry.value.retainAll(validIds);
       if (entry.value.isEmpty) discoveredRoutes.remove(entry.key);
+    }
+    if (json['noxRelationship'] case final Map relationshipJson) {
+      noxRelationship = NoxRelationship.fromJson(
+        Map<String, Object?>.from(relationshipJson),
+      );
+    } else {
+      final completed = bestRuns.entries.toList()
+        ..sort((a, b) => a.key.compareTo(b.key));
+      for (final entry in completed) {
+        final room = _roomForNumber(entry.key)!;
+        final run = entry.value;
+        final routeCount = discoveredRoutes[room.id]?.length ?? 0;
+        noxRelationship = noxRelationship.afterRoom(
+          firstCompletion: true,
+          newRoute: routeCount > 0,
+          underPar: run.effectiveStrokes <= room.level.par,
+          hintless: run.hints == 0,
+          roughRun: run.effectiveStrokes > room.level.par + 2,
+        );
+        for (var index = 1; index < routeCount; index++) {
+          noxRelationship = noxRelationship.afterRoom(
+            firstCompletion: false,
+            newRoute: true,
+            underPar: false,
+            hintless: false,
+            roughRun: false,
+          );
+        }
+      }
     }
 
     if (json['activeRun'] case final Map runJson) {
@@ -384,6 +460,32 @@ class GameController extends ChangeNotifier {
       Set.unmodifiable(discoveredRoutes[room.id] ?? const <String>{});
 
   bool get dailyBreachUnlocked => bestRuns.containsKey(4);
+
+  static String _drillKey(String definitionId, BreachDifficulty difficulty) =>
+      '$definitionId:${difficulty.name}';
+
+  DrillProgress? drillProgressFor(
+    DailyBreachDefinition definition,
+    BreachDifficulty difficulty,
+  ) => drillProgress[_drillKey(definition.id, difficulty)];
+
+  bool isHardDrillUnlocked(DailyBreachDefinition definition) =>
+      drillProgressFor(definition, BreachDifficulty.chill) != null;
+
+  int get drillXp => drillProgress.entries.fold(0, (total, entry) {
+    final hard = entry.key.endsWith(':${BreachDifficulty.hard.name}');
+    return total + entry.value.routes.length * (hard ? 20 : 10);
+  });
+
+  int get masteredDrillRoutes => drillProgress.values.fold(
+    0,
+    (total, progress) => total + progress.routes.length,
+  );
+
+  int get totalDrillRoutes => DailyBreachCatalog.definitions.fold(
+    0,
+    (total, definition) => total + definition.solutionRoutes.length * 2,
+  );
 
   bool isUnlocked(GameLevel level) => level.number <= unlockedLevel;
 
@@ -530,6 +632,20 @@ class GameController extends ChangeNotifier {
     await _preferences.setBool(_introKey, true);
   }
 
+  Future<void> acceptAiPrivacyConsent() async {
+    aiPrivacyConsentVersion = currentAiConsentVersion;
+    notifyListeners();
+    await _preferences.setInt(_aiConsentKey, currentAiConsentVersion);
+  }
+
+  /// Stops future AI requests until the player explicitly agrees again.
+  /// Existing local campaign progress is intentionally left untouched.
+  Future<void> revokeAiPrivacyConsent() async {
+    aiPrivacyConsentVersion = 0;
+    notifyListeners();
+    await _preferences.remove(_aiConsentKey);
+  }
+
   Future<void> saveRoomState(RoomState state) async {
     roomStates[state.roomId] = state;
     if (activeRun case final run? when run.roomId == state.roomId) {
@@ -563,6 +679,17 @@ class GameController extends ChangeNotifier {
       routeId: routeId,
     );
     final previous = bestRuns[level.number];
+    final knownRoutes = room == null
+        ? const <String>{}
+        : discoveredRoutes[room.id] ?? const <String>{};
+    final newRoute = routeId != null && !knownRoutes.contains(routeId);
+    noxRelationship = noxRelationship.afterRoom(
+      firstCompletion: previous == null,
+      newRoute: newRoute,
+      underPar: run.effectiveStrokes <= level.par,
+      hintless: run.hints == 0,
+      roughRun: run.effectiveStrokes > level.par + 2,
+    );
     if (previous == null || run.effectiveStrokes < previous.effectiveStrokes) {
       bestRuns[level.number] = run;
     }
@@ -581,7 +708,9 @@ class GameController extends ChangeNotifier {
   }
 
   Future<void> recordEnding(String ending) async {
-    endings.add(ending);
+    if (endings.add(ending)) {
+      noxRelationship = noxRelationship.afterEnding(ending);
+    }
     notifyListeners();
     await _persist();
   }
@@ -613,6 +742,35 @@ class GameController extends ChangeNotifier {
     notifyListeners();
     await _persist();
     return true;
+  }
+
+  Future<void> recordDrillResult({
+    required DailyBreachDefinition definition,
+    required BreachDifficulty difficulty,
+    required int strokes,
+    required String routeId,
+  }) async {
+    if (strokes <= 0) throw ArgumentError.value(strokes, 'strokes');
+    if (!definition.solutionRoutes.any((route) => route.id == routeId)) {
+      throw ArgumentError.value(routeId, 'routeId', 'Unknown drill route');
+    }
+    if (difficulty == BreachDifficulty.hard &&
+        !isHardDrillUnlocked(definition)) {
+      throw StateError('Clear the chill drill before hard mode.');
+    }
+    final key = _drillKey(definition.id, difficulty);
+    final previous = drillProgress[key];
+    drillProgress[key] = DrillProgress(
+      bestStrokes: previous == null
+          ? strokes
+          : strokes < previous.bestStrokes
+          ? strokes
+          : previous.bestStrokes,
+      completions: (previous?.completions ?? 0) + 1,
+      routes: {...?previous?.routes, routeId},
+    );
+    notifyListeners();
+    await _persist();
   }
 
   Future<void> queueDailyGameCenterScore(String occurrence, int score) =>
@@ -673,7 +831,9 @@ class GameController extends ChangeNotifier {
     endings: endings,
     pendingGameCenterEvents: pendingGameCenterEvents,
     dailyBestScores: dailyBestScores,
+    drillProgress: drillProgress,
     discoveredRoutes: discoveredRoutes,
+    noxRelationship: noxRelationship,
     activeRun: activeRun,
   );
 
@@ -696,7 +856,9 @@ class GameController extends ChangeNotifier {
     endings = {};
     pendingGameCenterEvents = [];
     dailyBestScores = {};
+    drillProgress = {};
     discoveredRoutes = {};
+    noxRelationship = const NoxRelationship();
     activeRun = null;
     notifyListeners();
     await Future.wait([

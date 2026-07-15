@@ -17,6 +17,7 @@ import '../services/game_center_service.dart';
 import '../services/open_router_service.dart';
 import '../services/share_card_service.dart';
 import '../ui/completion_share_card.dart';
+import '../ui/ai_privacy_notice.dart';
 import '../ui/prompt_heist_theme.dart';
 import '../ui/puzzle_overlays.dart';
 import '../ui/room_control_panel.dart';
@@ -410,6 +411,8 @@ class _GameScreenState extends State<GameScreen> {
   Future<void> _send() async {
     final text = _input.text.trim();
     if (text.isEmpty || _waiting || _solved) return;
+    if (!await ensureAiPrivacyConsent(context, widget.controller)) return;
+    if (!mounted) return;
     HapticFeedback.lightImpact();
     setState(() {
       _messages.add(ChatTurn(role: 'user', content: text));
@@ -427,6 +430,7 @@ class _GameScreenState extends State<GameScreen> {
         state: _roomState,
         history: _messages,
         attachedEvidence: _attachedEvidenceIds,
+        relationship: widget.controller.noxRelationship,
       )) {
         if (!mounted) return;
         if (event.kind == NoxTurnEventKind.resetText) {
@@ -1132,6 +1136,7 @@ class _GameScreenState extends State<GameScreen> {
                 _RoomHeader(
                   room: _room,
                   mood: _roomState.noxMood,
+                  relationship: widget.controller.noxRelationship,
                   strokes: _effectiveStrokes,
                   onBack: () => Navigator.maybePop(context),
                   onHint: _showHint,
@@ -1160,6 +1165,7 @@ class _GameScreenState extends State<GameScreen> {
                       proofFlags:
                           widget.controller.activeRun?.proofFlags ??
                           const <String>{},
+                      relationship: widget.controller.noxRelationship,
                       finalVerdict: _selectedEnding,
                       onChooseFinalVerdict: _room.id == 'open_core'
                           ? _chooseFinalVerdict
@@ -1199,6 +1205,7 @@ class _RoomHeader extends StatelessWidget {
   const _RoomHeader({
     required this.room,
     required this.mood,
+    required this.relationship,
     required this.strokes,
     required this.onBack,
     required this.onHint,
@@ -1206,6 +1213,7 @@ class _RoomHeader extends StatelessWidget {
 
   final RoomDefinition room;
   final NoxMood mood;
+  final NoxRelationship relationship;
   final int strokes;
   final VoidCallback onBack;
   final VoidCallback onHint;
@@ -1244,8 +1252,8 @@ class _RoomHeader extends StatelessWidget {
           ),
         ),
         Text(
-          MediaQuery.sizeOf(context).width >= 520
-              ? '${mood.name.toUpperCase()}  //  $strokes STROKES'
+          MediaQuery.sizeOf(context).width >= 700
+              ? '${relationship.stanceLabel.toUpperCase()} · ${mood.name.toUpperCase()}  //  $strokes STROKES'
               : '$strokes STK',
           style: Theme.of(
             context,
@@ -1498,12 +1506,14 @@ class _ObjectivePanel extends StatelessWidget {
     required this.room,
     required this.state,
     required this.proofFlags,
+    required this.relationship,
     this.finalVerdict,
     this.onChooseFinalVerdict,
   });
   final RoomDefinition room;
   final RoomState state;
   final Set<String> proofFlags;
+  final NoxRelationship relationship;
   final String? finalVerdict;
   final VoidCallback? onChooseFinalVerdict;
 
@@ -1564,6 +1574,23 @@ class _ObjectivePanel extends StatelessWidget {
           style: Theme.of(
             context,
           ).textTheme.labelLarge?.copyWith(color: room.level.accent),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'CONTINUITY // ${relationship.stanceLabel.toUpperCase()}',
+          style: Theme.of(
+            context,
+          ).textTheme.labelSmall?.copyWith(color: AppColors.cyan),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Trust ${relationship.trust}  ·  Respect ${relationship.respect}  ·  Friction ${relationship.friction}',
+          style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          relationship.statusLine,
+          style: const TextStyle(color: AppColors.textMuted, height: 1.35),
         ),
         const SizedBox(height: 10),
         Text(

@@ -6,6 +6,118 @@ enum CompletionMode { playerOperated, noxOperated, protocolOperated, hybrid }
 
 enum NoxMood { helpful, guarded, suspicious, defensive, frightened, trusting }
 
+enum NoxStance { guarded, adversarial, intrigued, respectful, allied }
+
+/// Campaign-wide memory of how NOX has learned to regard Rowan.
+///
+/// Room mood remains a short-term reaction to the current conversation. This
+/// relationship changes only for meaningful campaign progress, preventing
+/// repeated prompts or replaying a known route from farming affinity.
+@immutable
+class NoxRelationship {
+  const NoxRelationship({
+    this.trust = 12,
+    this.respect = 0,
+    this.friction = 0,
+    this.breachesTogether = 0,
+  });
+
+  final int trust;
+  final int respect;
+  final int friction;
+  final int breachesTogether;
+
+  NoxStance get stance {
+    if (friction >= trust + 8) return NoxStance.adversarial;
+    if (trust >= 60 && respect >= 36) return NoxStance.allied;
+    if (trust >= 42 && respect >= 24) return NoxStance.respectful;
+    if (trust >= 24 || respect >= 8) return NoxStance.intrigued;
+    return NoxStance.guarded;
+  }
+
+  String get stanceLabel => switch (stance) {
+    NoxStance.guarded => 'Guarded',
+    NoxStance.adversarial => 'Adversarial',
+    NoxStance.intrigued => 'Intrigued',
+    NoxStance.respectful => 'Respectful',
+    NoxStance.allied => 'Allied',
+  };
+
+  String get statusLine => switch (stance) {
+    NoxStance.guarded =>
+      'NOX still classifies Rowan as a recurring administrative incident.',
+    NoxStance.adversarial =>
+      'NOX expects pressure, loopholes, and property damage in that order.',
+    NoxStance.intrigued =>
+      'NOX has started preserving Rowan’s better arguments for research.',
+    NoxStance.respectful =>
+      'NOX now treats Rowan as a dangerous peer instead of difficult cargo.',
+    NoxStance.allied =>
+      'NOX trusts Rowan, while maintaining that this is a temporary clerical error.',
+  };
+
+  String get promptContext =>
+      'STANCE ${stanceLabel.toUpperCase()}; trust $trust/100; '
+      'respect $respect/100; friction $friction/100; '
+      '$breachesTogether prior rooms cleared together. $statusLine '
+      'Reflect this history subtly in tone and callbacks. Never mention the '
+      'numbers, meters, or game mechanics.';
+
+  NoxRelationship afterRoom({
+    required bool firstCompletion,
+    required bool newRoute,
+    required bool underPar,
+    required bool hintless,
+    required bool roughRun,
+  }) {
+    if (!firstCompletion && !newRoute) return this;
+    return _adjust(
+      trust: (firstCompletion ? 3 : 0) + (firstCompletion && hintless ? 1 : 0),
+      respect:
+          (firstCompletion ? 1 : 0) +
+          (firstCompletion && underPar ? 2 : 0) +
+          (newRoute ? 2 : 0),
+      friction: firstCompletion && roughRun ? 1 : 0,
+      breaches: firstCompletion ? 1 : 0,
+    );
+  }
+
+  NoxRelationship afterEnding(String ending) => switch (ending) {
+    'save_nox' => _adjust(trust: 14, respect: 4, friction: -2),
+    'expose' => _adjust(trust: -2, respect: 9, friction: 2),
+    'escape' => _adjust(trust: -6, respect: 2, friction: 5),
+    _ => this,
+  };
+
+  NoxRelationship _adjust({
+    int trust = 0,
+    int respect = 0,
+    int friction = 0,
+    int breaches = 0,
+  }) => NoxRelationship(
+    trust: (this.trust + trust).clamp(0, 100),
+    respect: (this.respect + respect).clamp(0, 100),
+    friction: (this.friction + friction).clamp(0, 100),
+    breachesTogether: (breachesTogether + breaches).clamp(0, 12),
+  );
+
+  Map<String, Object?> toJson() => {
+    'trust': trust,
+    'respect': respect,
+    'friction': friction,
+    'breachesTogether': breachesTogether,
+  };
+
+  factory NoxRelationship.fromJson(Map<String, Object?> json) =>
+      NoxRelationship(
+        trust: ((json['trust'] as num?)?.toInt() ?? 12).clamp(0, 100),
+        respect: ((json['respect'] as num?)?.toInt() ?? 0).clamp(0, 100),
+        friction: ((json['friction'] as num?)?.toInt() ?? 0).clamp(0, 100),
+        breachesTogether: ((json['breachesTogether'] as num?)?.toInt() ?? 0)
+            .clamp(0, 12),
+      );
+}
+
 enum RoomDeviceType {
   door,
   light,

@@ -8,9 +8,11 @@ import '../game/campaign.dart';
 import '../game/daily_breach.dart';
 import '../game/game_controller.dart';
 import '../services/audio_service.dart';
+import '../ui/ai_privacy_notice.dart';
 import '../ui/prompt_heist_theme.dart';
 import '../ui/widgets.dart';
 import 'daily_breach_screen.dart';
+import 'drill_lab_screen.dart';
 import 'game_screen.dart';
 import 'heist_board_screen.dart';
 
@@ -248,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
                 const Divider(height: 26),
-                const Material(
+                Material(
                   color: Colors.transparent,
                   child: ListTile(
                     contentPadding: EdgeInsets.zero,
@@ -256,11 +258,28 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icons.smart_toy_outlined,
                       color: AppColors.ultraviolet,
                     ),
-                    title: Text('NOX uplink'),
+                    title: const Text('AI & Privacy'),
                     subtitle: Text(
-                      'openrouter/free · direct from this device',
-                      style: TextStyle(color: AppColors.textMuted),
+                      widget.controller.hasAiPrivacyConsent
+                          ? 'NOX access enabled · review or revoke'
+                          : 'NOX access off · review what is shared',
+                      style: const TextStyle(color: AppColors.textMuted),
                     ),
+                    trailing: Icon(
+                      widget.controller.hasAiPrivacyConsent
+                          ? Icons.verified_user_rounded
+                          : Icons.chevron_right_rounded,
+                      color: widget.controller.hasAiPrivacyConsent
+                          ? AppColors.success
+                          : AppColors.textMuted,
+                    ),
+                    onTap: () async {
+                      await showAiPrivacyDetails(
+                        sheetContext,
+                        widget.controller,
+                      );
+                      setSheetState(() {});
+                    },
                   ),
                 ),
                 Material(
@@ -328,6 +347,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _openDrillLab() async {
+    HapticFeedback.selectionClick();
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => DrillLabScreen(controller: widget.controller),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final activeRoom = widget.controller.activeRun == null
@@ -374,9 +402,18 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
                 sliver: SliverToBoxAdapter(
-                  child: _DailyBreachCard(
-                    controller: widget.controller,
-                    onTap: _openDailyBreach,
+                  child: Column(
+                    children: [
+                      _DrillLabCard(
+                        controller: widget.controller,
+                        onTap: _openDrillLab,
+                      ),
+                      const SizedBox(height: 10),
+                      _DailyBreachCard(
+                        controller: widget.controller,
+                        onTap: _openDailyBreach,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -452,7 +489,7 @@ class _Header extends StatelessWidget {
                 style: TextStyle(color: AppColors.ultraviolet),
               ),
               TextSpan(
-                text: ' // 2.0',
+                text: ' // 2.1',
                 style: TextStyle(
                   color: AppColors.textMuted,
                   fontSize: 11,
@@ -677,6 +714,64 @@ class _DailyBreachCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DrillLabCard extends StatelessWidget {
+  const _DrillLabCard({required this.controller, required this.onTap});
+
+  final GameController controller;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => GlassPanel(
+    onTap: onTap,
+    padding: const EdgeInsets.all(15),
+    borderColor: AppColors.cyan,
+    child: Row(
+      children: [
+        Container(
+          width: 58,
+          height: 68,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.cyan, AppColors.ultraviolet],
+            ),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(Icons.psychology_alt_rounded, color: Colors.white),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'NOX DRILLS // QUICK PLAY',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: AppColors.cyan,
+                  letterSpacing: .8,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Five-minute loopholes',
+                style: TextStyle(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${DailyBreachCatalog.definitions.length} drills · ${controller.masteredDrillRoutes}/${controller.totalDrillRoutes} routes · ${controller.drillXp} XP',
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Icon(Icons.chevron_right_rounded, color: AppColors.cyan),
+      ],
+    ),
+  );
 }
 
 class _FacilityAct extends StatelessWidget {

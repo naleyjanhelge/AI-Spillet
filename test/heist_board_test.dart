@@ -35,6 +35,10 @@ void main() {
     expect(find.text('TOTAL STARS'), findsOneWidget);
     expect(find.text('ROUTES'), findsOneWidget);
     expect(find.text('1/${controller.totalAvailableRoutes}'), findsOneWidget);
+    expect(find.text('NOX CONTINUITY // GUARDED'), findsOneWidget);
+    expect(find.text('TRUST'), findsOneWidget);
+    expect(find.text('RESPECT'), findsOneWidget);
+    expect(find.text('FRICTION'), findsOneWidget);
 
     await tester.tap(find.text('FRIENDS'));
     await tester.pump();

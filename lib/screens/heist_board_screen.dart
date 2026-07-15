@@ -301,6 +301,7 @@ class _HeistBoardScreenState extends State<HeistBoardScreen> {
                     strokes: controller.totalEffectiveStrokes,
                     routes: controller.totalDiscoveredRoutes,
                     maxRoutes: controller.totalAvailableRoutes,
+                    relationship: controller.noxRelationship,
                   ).animate().fadeIn().slideY(begin: .08),
                 ),
               ),
@@ -627,6 +628,7 @@ class _RankPanel extends StatelessWidget {
     required this.strokes,
     required this.routes,
     required this.maxRoutes,
+    required this.relationship,
   });
 
   final _Rank rank;
@@ -636,6 +638,7 @@ class _RankPanel extends StatelessWidget {
   final int strokes;
   final int routes;
   final int maxRoutes;
+  final NoxRelationship relationship;
 
   @override
   Widget build(BuildContext context) {
@@ -676,6 +679,56 @@ class _RankPanel extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.deepSpace.withValues(alpha: .72),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.cyan.withValues(alpha: .24)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'NOX CONTINUITY // ${relationship.stanceLabel.toUpperCase()}',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: AppColors.cyan),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  relationship.statusLine,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: AppColors.textMuted),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _RelationshipMeter(
+                      label: 'TRUST',
+                      value: relationship.trust,
+                      color: AppColors.cyan,
+                    ),
+                    const SizedBox(width: 10),
+                    _RelationshipMeter(
+                      label: 'RESPECT',
+                      value: relationship.respect,
+                      color: AppColors.ultraviolet,
+                    ),
+                    const SizedBox(width: 10),
+                    _RelationshipMeter(
+                      label: 'FRICTION',
+                      value: relationship.friction,
+                      color: AppColors.danger,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 18),
           Row(
@@ -888,6 +941,61 @@ class _RemoteLeaderboardHeader extends StatelessWidget {
               onPressed: () => unawaited(onOpen()),
               icon: const Icon(Icons.open_in_new_rounded),
             ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RelationshipMeter extends StatelessWidget {
+  const _RelationshipMeter({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final int value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: AppColors.textMuted,
+                    fontSize: 9,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '$value',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelSmall?.copyWith(color: color),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: LinearProgressIndicator(
+              minHeight: 4,
+              value: value / 100,
+              backgroundColor: AppColors.surfaceHigh,
+              valueColor: AlwaysStoppedAnimation(color),
+            ),
+          ),
         ],
       ),
     );

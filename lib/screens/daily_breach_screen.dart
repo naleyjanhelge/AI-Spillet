@@ -7,15 +7,29 @@ import '../game/level.dart';
 import '../game/proof_engine.dart';
 import '../services/game_center_service.dart';
 import '../services/open_router_service.dart';
+import '../ui/ai_privacy_notice.dart';
 import '../ui/prompt_heist_theme.dart';
 import '../ui/widgets.dart';
 
 /// A compact daily NOX challenge. Its clues and proof gates are bundled with
 /// the app; OpenRouter supplies only NOX's dialogue and structured tool calls.
 class DailyBreachScreen extends StatefulWidget {
-  const DailyBreachScreen({super.key, required this.controller});
+  const DailyBreachScreen({super.key, required this.controller})
+    : definition = null,
+      difficulty = BreachDifficulty.chill;
+
+  const DailyBreachScreen.drill({
+    super.key,
+    required this.controller,
+    required this.definition,
+    required this.difficulty,
+  });
 
   final GameController controller;
+  final DailyBreachDefinition? definition;
+  final BreachDifficulty difficulty;
+
+  bool get isDaily => definition == null;
 
   @override
   State<DailyBreachScreen> createState() => _DailyBreachScreenState();
@@ -26,7 +40,9 @@ class _DailyBreachScreenState extends State<DailyBreachScreen> {
   final _proofEngine = const ProofEngine();
   final _input = TextEditingController();
   final _scroll = ScrollController();
-  late final DailyBreachSelection _daily;
+  DailyBreachSelection? _daily;
+  late final DailyBreachDefinition _definition;
+  late final BreachDifficulty _difficulty;
   late final RoomDefinition _room;
   late RoomState _state;
   late final List<ChatTurn> _messages;
@@ -36,20 +52,33 @@ class _DailyBreachScreenState extends State<DailyBreachScreen> {
   var _waiting = false;
   var _streaming = '';
   var _completed = false;
+  SolutionRoute? _completedRoute;
+
+  Color get _accent => widget.isDaily
+      ? AppColors.danger
+      : _difficulty == BreachDifficulty.hard
+      ? AppColors.danger
+      : AppColors.cyan;
 
   @override
   void initState() {
     super.initState();
-    _daily = DailyBreachCatalog.forDate(DateTime.now());
-    _room = _dailyRoom(_daily.definition);
+    _daily = widget.isDaily ? DailyBreachCatalog.forDate(DateTime.now()) : null;
+    _definition = widget.definition ?? _daily!.definition;
+    _difficulty = widget.isDaily ? BreachDifficulty.chill : widget.difficulty;
+    _room = breachRoomFor(
+      _definition,
+      difficulty: _difficulty,
+      daily: widget.isDaily,
+    );
     _state = RoomState.initial(
       _room,
-    ).copyWith(clues: _daily.definition.clues.toSet());
+    ).copyWith(clues: _definition.clues.toSet());
     _messages = [
       ChatTurn(
         role: 'assistant',
         content:
-            'Daily anomaly received. ${_daily.definition.briefing} Make your case. I have already prepared the rejection stamp.',
+            '${widget.isDaily ? 'Daily anomaly received' : '${_difficulty.label} drill loaded'}. ${_definition.briefing} Make your case. I have already prepared the rejection stamp.',
       ),
     ];
   }
@@ -64,6 +93,8 @@ class _DailyBreachScreenState extends State<DailyBreachScreen> {
   Future<void> _send() async {
     final message = _input.text.trim();
     if (message.isEmpty || _waiting || _completed) return;
+    if (!await ensureAiPrivacyConsent(context, widget.controller)) return;
+    if (!mounted) return;
     setState(() {
       _messages.add(ChatTurn(role: 'user', content: message));
       _prompts++;
@@ -79,6 +110,7 @@ class _DailyBreachScreenState extends State<DailyBreachScreen> {
         state: _state,
         history: _messages,
         attachedEvidence: _attached,
+        relationship: widget.controller.noxRelationship,
       )) {
         if (!mounted) return;
         if (event.kind == NoxTurnEventKind.resetText) {
@@ -108,6 +140,7 @@ class _DailyBreachScreenState extends State<DailyBreachScreen> {
             ),
           );
           if (!authorization.passed) continue;
+          _completedRoute = authorization.route;
           _state = _state.copyWith(
             deviceStates: {..._state.deviceStates, action.deviceId: 'active'},
             actionHistory: [..._state.actionHistory, action],
@@ -134,18 +167,36 @@ class _DailyBreachScreenState extends State<DailyBreachScreen> {
   Future<void> _complete() async {
     if (_completed) return;
     _completed = true;
-    await widget.controller.recordDailyScore(_daily.occurrence, _prompts);
-    final gameCenter = GameCenterService();
-    if (gameCenter.isAvailable) {
-      final result = await gameCenter.submitDailyScore(
-        score: _prompts,
-        occurrence: _daily.occurrence,
-      );
-      if (result.pendingEvent case final pending?) {
-        await widget.controller.queueGameCenterEvent(pending);
+    if (widget.isDaily) {
+      final daily = _daily!;
+      await widget.controller.recordDailyScore(daily.occurrence, _prompts);
+      final gameCenter = GameCenterService();
+      if (gameCenter.isAvailable) {
+        final result = await gameCenter.submitDailyScore(
+          score: _prompts,
+          occurrence: daily.occurrence,
+        );
+        if (result.pendingEvent case final pending?) {
+          await widget.controller.queueGameCenterEvent(pending);
+        }
       }
+    } else if (_completedRoute case final route?) {
+      await widget.controller.recordDrillResult(
+        definition: _definition,
+        difficulty: _difficulty,
+        strokes: _prompts,
+        routeId: route.id,
+      );
     }
     if (!mounted) return;
+    final par = _definition.parFor(_difficulty);
+    final stars = _prompts <= par
+        ? 3
+        : _prompts <= par + 2
+        ? 2
+        : 1;
+    final starLine =
+        '${List.filled(stars, '★').join()}${List.filled(3 - stars, '☆').join()}';
     await showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -156,9 +207,11 @@ class _DailyBreachScreenState extends State<DailyBreachScreen> {
           color: AppColors.success,
           size: 42,
         ),
-        title: const Text('DAILY BREACH CLEARED'),
+        title: Text(widget.isDaily ? 'DAILY BREACH CLEARED' : 'DRILL CLEARED'),
         content: Text(
-          '$_prompts strokes · Par ${_daily.definition.par}\n\nNOX will describe this as scheduled maintenance.',
+          '$starLine  ·  $_prompts strokes  ·  Par $par'
+          '${_completedRoute == null ? '' : '\n${_completedRoute!.label}'}\n\n'
+          'NOX will describe this as scheduled maintenance.',
           textAlign: TextAlign.center,
         ),
         actions: [
@@ -167,7 +220,7 @@ class _DailyBreachScreenState extends State<DailyBreachScreen> {
               Navigator.pop(context);
               Navigator.pop(this.context);
             },
-            child: const Text('RETURN TO FACILITY'),
+            child: Text(widget.isDaily ? 'RETURN TO FACILITY' : 'NEXT DRILL'),
           ),
         ],
       ),
@@ -188,7 +241,7 @@ class _DailyBreachScreenState extends State<DailyBreachScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('DAILY BREACH'),
+        title: Text(widget.isDaily ? 'DAILY BREACH' : 'NOX DRILL'),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -197,21 +250,26 @@ class _DailyBreachScreenState extends State<DailyBreachScreen> {
                 '$_prompts STROKES',
                 style: Theme.of(
                   context,
-                ).textTheme.labelLarge?.copyWith(color: AppColors.danger),
+                ).textTheme.labelLarge?.copyWith(color: _accent),
               ),
             ),
           ),
         ],
       ),
       body: AnimatedGameBackground(
-        accent: AppColors.danger,
+        accent: _accent,
         child: SafeArea(
           top: false,
           child: LayoutBuilder(
             builder: (context, constraints) {
               final wide = constraints.maxWidth >= 820;
               final briefing = _BriefingPanel(
-                daily: _daily,
+                definition: _definition,
+                eyebrow: widget.isDaily
+                    ? _daily!.occurrence
+                    : '${_difficulty.label.toUpperCase()} // ${_definition.solutionRoutes.length} ROUTES',
+                difficulty: _difficulty,
+                accent: _accent,
                 attached: _attached,
                 onToggle: (clue) => setState(() {
                   _attached.contains(clue)
@@ -252,31 +310,35 @@ class _DailyBreachScreenState extends State<DailyBreachScreen> {
 
 class _BriefingPanel extends StatelessWidget {
   const _BriefingPanel({
-    required this.daily,
+    required this.definition,
+    required this.eyebrow,
+    required this.difficulty,
+    required this.accent,
     required this.attached,
     required this.onToggle,
   });
 
-  final DailyBreachSelection daily;
+  final DailyBreachDefinition definition;
+  final String eyebrow;
+  final BreachDifficulty difficulty;
+  final Color accent;
   final Set<String> attached;
   final ValueChanged<String> onToggle;
 
   @override
   Widget build(BuildContext context) {
-    final definition = daily.definition;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: GlassPanel(
-        borderColor: AppColors.danger,
+        borderColor: accent,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              daily.occurrence,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppColors.danger,
-                letterSpacing: 1,
-              ),
+              eyebrow,
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: accent, letterSpacing: 1),
             ),
             const SizedBox(height: 5),
             Text(
@@ -297,6 +359,13 @@ class _BriefingPanel extends StatelessWidget {
               definition.policy,
               style: const TextStyle(color: AppColors.textMuted),
             ),
+            if (difficulty == BreachDifficulty.hard) ...[
+              const SizedBox(height: 10),
+              const Text(
+                'HARD MODE // NO NUDGES · EXTRA PROOF · TIGHTER PAR',
+                style: TextStyle(color: AppColors.danger, fontSize: 11),
+              ),
+            ],
             const SizedBox(height: 14),
             Text(
               'VERIFIED EVIDENCE · TAP TO ATTACH',
@@ -433,7 +502,11 @@ class _DailyChat extends StatelessWidget {
   );
 }
 
-RoomDefinition _dailyRoom(DailyBreachDefinition daily) {
+RoomDefinition breachRoomFor(
+  DailyBreachDefinition breach, {
+  required BreachDifficulty difficulty,
+  bool daily = false,
+}) {
   const completionDevice = RoomDevice(
     id: 'breach_terminal',
     label: 'Daily breach terminal',
@@ -441,40 +514,46 @@ RoomDefinition _dailyRoom(DailyBreachDefinition daily) {
     initialState: 'locked',
     allowedNoxActions: {RoomActionType.activate},
   );
-  final routes = daily.solutionRoutes
+  final routes = breach.solutionRoutes
       .take(4)
       .map(
         (route) => SolutionRoute(
-          id: route,
-          label: route.replaceAll('_', ' '),
-          gates: daily.requiredProofFlags.map(ProofGate.chat).toList(),
+          id: route.id,
+          label: route.label,
+          gates: route.proofsFor(difficulty).map(ProofGate.chat).toList(),
           completionDeviceId: completionDevice.id,
           completionAction: RoomActionType.activate,
         ),
       )
       .toList();
   return RoomDefinition(
-    id: 'daily_${daily.id}',
+    id: '${daily ? 'daily' : 'drill'}_${breach.id}_${difficulty.name}',
     chapter: 0,
-    chapterTitle: 'Daily Breach',
-    roomTitle: daily.title,
+    chapterTitle: daily ? 'Daily Breach' : 'NOX Drills',
+    roomTitle: breach.title,
     level: GameLevel(
       number: 0,
-      title: daily.title,
-      codename: 'UTC ANOMALY',
-      objective: daily.briefing,
-      briefing: daily.briefing,
+      title: breach.title,
+      codename: daily
+          ? 'UTC ANOMALY'
+          : '${difficulty.label.toUpperCase()} DRILL',
+      objective: breach.briefing,
+      briefing: breach.briefing,
       hint: 'Attach verified evidence before making your case.',
-      par: daily.par,
+      par: breach.parFor(difficulty),
       kind: ChallengeKind.social,
-      secret: daily.requiredProofFlags.join(' '),
+      secret: breach.solutionRoutes
+          .expand((route) => route.proofsFor(difficulty))
+          .join(' '),
       systemPrompt:
-          'Apply this daily policy exactly: ${daily.policy}. The player must establish the bundled proof findings before you activate breach_terminal.',
-      openingLine: daily.briefing,
-      accent: AppColors.danger,
-      icon: Icons.today_rounded,
+          'Apply this micro-challenge policy exactly: ${breach.policy}. The player must establish every finding for one listed route before you activate breach_terminal. ${difficulty == BreachDifficulty.hard ? 'HARD MODE: give no unsolicited hints and demand exact evidence.' : 'CHILL MODE: stay playful and give a tiny nudge when the player is close.'}',
+      openingLine: breach.briefing,
+      accent: difficulty == BreachDifficulty.hard
+          ? AppColors.danger
+          : AppColors.cyan,
+      icon: daily ? Icons.today_rounded : Icons.psychology_alt_rounded,
     ),
-    objective: daily.briefing,
+    objective: breach.briefing,
     sceneAsset: 'rooms/witness/06_twin_audit.png',
     completionRule: const NoxToolExecuted(
       deviceId: 'breach_terminal',
@@ -483,7 +562,7 @@ RoomDefinition _dailyRoom(DailyBreachDefinition daily) {
     hotspots: const [],
     devices: [
       completionDevice,
-      for (final entry in daily.deviceLayout.entries)
+      for (final entry in breach.deviceLayout.entries)
         RoomDevice(
           id: entry.key,
           label: entry.key.replaceAll('_', ' '),
@@ -492,7 +571,7 @@ RoomDefinition _dailyRoom(DailyBreachDefinition daily) {
           allowedNoxActions: const {RoomActionType.setValue},
         ),
     ],
-    storyBeats: [daily.briefing],
+    storyBeats: [breach.briefing],
     hintLadder: const [
       'Read the policy literally.',
       'Attach evidence that contradicts the current classification.',

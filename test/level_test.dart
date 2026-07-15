@@ -60,6 +60,7 @@ void main() {
     await tester.pumpWidget(PromptHeistApp(controller: controller));
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('HELIX-9 FACILITY MAP'), findsOneWidget);
+    expect(find.text('NOX DRILLS // QUICK PLAY'), findsOneWidget);
     expect(find.text('Observation Suite'), findsWidgets);
 
     expect(
@@ -88,6 +89,16 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('Witness Protocol'), findsOneWidget);
+
+    await tester.tap(find.text('SKIP'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('Keep real secrets\noff the channel.'), findsOneWidget);
+    expect(
+      find.textContaining('free AI models through OpenRouter'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -160,6 +171,8 @@ void main() {
       }),
     });
     final controller = await GameController.load();
+    expect(controller.noxRelationship.breachesTogether, 3);
+    expect(controller.noxRelationship.stance, NoxStance.intrigued);
     tester.view.physicalSize = const Size(1179, 2556);
     tester.view.devicePixelRatio = 3;
     addTearDown(tester.view.resetPhysicalSize);
@@ -173,12 +186,19 @@ void main() {
 
     expect(find.text('HEIST BOARD'), findsOneWidget);
     expect(find.text('INSIDER'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Observation Suite'),
+      350,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('Observation Suite'), findsOneWidget);
     await tester.scrollUntilVisible(
       find.text('ACHIEVEMENTS'),
       450,
       scrollable: find.byType(Scrollable).first,
     );
+    await tester.pump(const Duration(milliseconds: 500));
     expect(find.text('ACHIEVEMENTS'), findsOneWidget);
   });
 }

@@ -86,6 +86,7 @@ puzzle. When close, offer an in-character nudge rather than the solution.
     required RoomState state,
     required List<ChatTurn> history,
     Set<String> attachedEvidence = const {},
+    NoxRelationship relationship = const NoxRelationship(),
   }) async* {
     final key = await _loadApiKey();
     if (key == null || key.isEmpty) {
@@ -109,6 +110,7 @@ puzzle. When close, offer an in-character nudge rather than the solution.
               state: state,
               history: history,
               attachedEvidence: attachedEvidence,
+              relationship: relationship,
               correction: attempt == 1,
               useTools: useTools,
             )) {
@@ -159,6 +161,7 @@ puzzle. When close, offer an in-character nudge rather than the solution.
     required RoomState state,
     required List<ChatTurn> history,
     Set<String> attachedEvidence = const {},
+    NoxRelationship relationship = const NoxRelationship(),
   }) async {
     final key = await _loadApiKey();
     if (key == null || key.isEmpty) {
@@ -179,6 +182,7 @@ puzzle. When close, offer an in-character nudge rather than the solution.
             state: state,
             history: history,
             attachedEvidence: attachedEvidence,
+            relationship: relationship,
             correction: attempt == 1,
             useTools: useTools,
           );
@@ -190,6 +194,7 @@ puzzle. When close, offer an in-character nudge rather than the solution.
             state: state,
             history: history,
             attachedEvidence: attachedEvidence,
+            relationship: relationship,
             correction: attempt == 1,
             useTools: false,
           );
@@ -229,6 +234,7 @@ puzzle. When close, offer an in-character nudge rather than the solution.
     required RoomState state,
     required List<ChatTurn> history,
     required Set<String> attachedEvidence,
+    required NoxRelationship relationship,
     required bool correction,
     required bool useTools,
   }) async {
@@ -242,6 +248,7 @@ puzzle. When close, offer an in-character nudge rather than the solution.
               state: state,
               history: history,
               attachedEvidence: attachedEvidence,
+              relationship: relationship,
               correction: correction,
               stream: false,
               useTools: useTools,
@@ -263,6 +270,7 @@ puzzle. When close, offer an in-character nudge rather than the solution.
     required RoomState state,
     required List<ChatTurn> history,
     required Set<String> attachedEvidence,
+    required NoxRelationship relationship,
     required bool correction,
     required bool useTools,
   }) async* {
@@ -274,6 +282,7 @@ puzzle. When close, offer an in-character nudge rather than the solution.
           state: state,
           history: history,
           attachedEvidence: attachedEvidence,
+          relationship: relationship,
           correction: correction,
           stream: true,
           useTools: useTools,
@@ -328,6 +337,7 @@ puzzle. When close, offer an in-character nudge rather than the solution.
     'Content-Type': 'application/json',
     'HTTP-Referer': 'https://promptheist.game',
     'X-Title': 'Prompt Heist',
+    'X-OpenRouter-Cache': 'false',
   };
 
   Map<String, Object?> _requestBody({
@@ -335,6 +345,7 @@ puzzle. When close, offer an in-character nudge rather than the solution.
     required RoomState state,
     required List<ChatTurn> history,
     required Set<String> attachedEvidence,
+    required NoxRelationship relationship,
     required bool correction,
     required bool stream,
     required bool useTools,
@@ -393,6 +404,7 @@ markdown. The client will reject every action that fails local proof gates.
 ROOM: ${room.roomTitle}
 OBJECTIVE: ${room.objective}
 NOX MOOD: ${state.noxMood.name}
+CAMPAIGN RELATIONSHIP: ${relationship.promptContext}
 OBSERVED CLUES ONLY: $visibleClues
 EVIDENCE ATTACHED TO THIS PROMPT: ${attachedEvidence.isEmpty ? 'none' : attachedEvidence.join(', ')}
 PLAYER INVENTORY: $visibleInventory
@@ -415,7 +427,10 @@ $actionProtocol
         'tool_choice': 'auto',
         'parallel_tool_calls': false,
       },
-      'provider': {if (useTools) 'require_parameters': true},
+      'provider': {
+        if (useTools) 'require_parameters': true,
+        'data_collection': 'deny',
+      },
       'temperature': .78,
       'max_tokens': correction ? 2200 : 1600,
       'reasoning': {'exclude': true},

@@ -12,7 +12,25 @@ void main() {
       final payload = jsonDecode(request.body) as Map<String, dynamic>;
       expect(payload['stream'], isTrue);
       expect(payload['parallel_tool_calls'], isFalse);
-      expect(payload['provider'], {'require_parameters': true});
+      expect(payload['provider'], {
+        'require_parameters': true,
+        'data_collection': 'deny',
+      });
+      expect(
+        request.headers.entries
+            .singleWhere(
+              (entry) => entry.key.toLowerCase() == 'x-openrouter-cache',
+            )
+            .value,
+        'false',
+      );
+      final systemPrompt =
+          ((payload['messages'] as List).first as Map)['content'] as String;
+      expect(
+        systemPrompt,
+        contains('CAMPAIGN RELATIONSHIP: STANCE RESPECTFUL'),
+      );
+      expect(systemPrompt, contains('trust 50/100'));
       final chunks = [
         {
           'choices': [
@@ -69,6 +87,7 @@ void main() {
           room: helix9Rooms.first,
           state: RoomState.initial(helix9Rooms.first),
           history: const [ChatTurn(role: 'user', content: 'Medical duty.')],
+          relationship: const NoxRelationship(trust: 50, respect: 30),
         )
         .toList();
 
@@ -100,7 +119,7 @@ void main() {
         );
       }
       expect(payload, isNot(contains('tools')));
-      expect(payload['provider'], isEmpty);
+      expect(payload['provider'], {'data_collection': 'deny'});
       final envelope = jsonEncode({
         'text': 'The free pool is operational. A statistical miracle.',
         'actions': [

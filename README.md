@@ -18,8 +18,9 @@ scanners, and alarms—and may be guard, accomplice, or both.
   change the room merely by claiming an action in chat.
 - Prompt-golf score: `prompts + (hints × 2)`. Every room has three progressive
   hints and a spoiler-free 1080×1920 completion card.
-- Resumable runs, Daily Breach, three endings, local records, Game Center
-  achievements, and lowest-score daily/chapter/campaign leaderboards.
+- Resumable runs, 12 bite-sized NOX Drills with Chill/Hard mastery, Daily
+  Breach, three endings, local records, Game Center achievements, and
+  lowest-score daily/chapter/campaign leaderboards.
 - Adaptive iPhone, iPad portrait/landscape, Split View, Stage Manager, and
   Android tablet layouts.
 
@@ -38,7 +39,8 @@ scanners, and alarms—and may be guard, accomplice, or both.
 
 `openrouter/free` selects a compatible free model. Prompt Heist supplies the
 room-control tool schema and retries empty, text-only action claims internally;
-technical failures do not count as strokes.
+technical failures do not count as strokes. Every request restricts routing to
+providers that deny data collection and explicitly disables response caching.
 
 ## Test and build
 
@@ -50,7 +52,14 @@ flutter build ios --release --no-codesign --dart-define=OPENROUTER_API_KEY=your_
 flutter build ipa --release --dart-define=OPENROUTER_API_KEY=your_openrouter_key
 ```
 
-The current TestFlight release is **2.0.0 (build 5)** and targets iOS 14+.
+The current release candidate is **2.1.0 (build 7)** and targets iOS 14+.
+
+## Website and App Store material
+
+The static GitHub Pages site lives in `docs/` and includes the landing page,
+Privacy Policy, Terms, and Support. Publish from `main` → `/docs` in the
+repository's Pages settings. Copy-ready product-page text and the privacy/review
+checklist live in `APP_STORE_METADATA.md` and `APP_STORE_PRIVACY.md`.
 
 ## Game Center setup
 
@@ -72,6 +81,7 @@ and retried after the next successful authentication.
 ## API-key security
 
 The key is no longer bundled as a readable `.env` asset. A `dart-define` is
-still extractable from a distributed mobile binary, so use a Prompt Heist-only
-OpenRouter key with a low credit limit and rotate it for every release. The game
-communicates directly with OpenRouter; it does not require hosting or a backend.
+still extractable from a distributed mobile binary. Build 7's direct connection
+is appropriate for limited TestFlight testing only: use a Prompt Heist-only key
+with a low credit limit and rotate it for every build. Before a public release,
+move the key behind a controlled backend proxy with rate and abuse limits.

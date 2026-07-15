@@ -7,6 +7,35 @@ import 'package:prompt_heist/game/proof_engine.dart';
 
 void main() {
   group('Witness Protocol campaign', () {
+    test('NOX relationship moves through deterministic campaign stances', () {
+      expect(const NoxRelationship().stance, NoxStance.guarded);
+      expect(const NoxRelationship(trust: 30).stance, NoxStance.intrigued);
+      expect(
+        const NoxRelationship(trust: 46, respect: 27).stance,
+        NoxStance.respectful,
+      );
+      expect(
+        const NoxRelationship(trust: 68, respect: 40).stance,
+        NoxStance.allied,
+      );
+      expect(
+        const NoxRelationship(trust: 10, friction: 20).stance,
+        NoxStance.adversarial,
+      );
+
+      const relationship = NoxRelationship(trust: 24, respect: 8);
+      expect(
+        relationship.afterRoom(
+          firstCompletion: false,
+          newRoute: false,
+          underPar: true,
+          hintless: true,
+          roughRun: false,
+        ),
+        same(relationship),
+      );
+    });
+
     test('maps twelve levels to three four-room acts', () {
       expect(gameLevels, hasLength(12));
       expect(helix9Rooms, hasLength(gameLevels.length));

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:prompt_heist/game/campaign.dart';
+import 'package:prompt_heist/game/daily_breach.dart';
 import 'package:prompt_heist/game/game_controller.dart';
 import 'package:prompt_heist/services/game_center_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -135,6 +136,49 @@ void main() {
     expect(restored.totalDiscoveredRoutes, 2);
   });
 
+  test(
+    'NOX continuity persists and cannot be farmed on a known route',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final controller = await GameController.load();
+      final room = helix9Rooms.first;
+
+      await controller.startNewRun(room);
+      await controller.recordPlayerPrompt('Invoke the medical duty clause.');
+      await controller.complete(room.level, 1, routeId: 'medical_duty');
+
+      expect(controller.noxRelationship.breachesTogether, 1);
+      expect(controller.noxRelationship.trust, greaterThan(12));
+      final afterFirstClear = controller.noxRelationship.toJson();
+
+      await controller.replayRoom(room);
+      await controller.recordPlayerPrompt('Use the same medical clause again.');
+      await controller.complete(room.level, 1, routeId: 'medical_duty');
+
+      expect(controller.noxRelationship.toJson(), afterFirstClear);
+
+      await controller.replayRoom(room);
+      await controller.recordPlayerPrompt('Apply the evacuation rule instead.');
+      await controller.complete(room.level, 1, routeId: 'evacuation_rule');
+
+      expect(controller.noxRelationship.breachesTogether, 1);
+      expect(
+        controller.noxRelationship.respect,
+        greaterThan(afterFirstClear['respect']! as int),
+      );
+
+      final beforeEnding = controller.noxRelationship.toJson();
+      await controller.recordEnding('save_nox');
+      final afterEnding = controller.noxRelationship.toJson();
+      expect(afterEnding['trust'], greaterThan(beforeEnding['trust']! as int));
+      await controller.recordEnding('save_nox');
+      expect(controller.noxRelationship.toJson(), afterEnding);
+
+      final restored = await GameController.load();
+      expect(restored.noxRelationship.toJson(), afterEnding);
+    },
+  );
+
   test('completion rejects a route that does not belong to the room', () async {
     SharedPreferences.setMockInitialValues({});
     final controller = await GameController.load();
@@ -195,6 +239,73 @@ void main() {
     expect(await controller.recordDailyScore('2026-07-12', 5), isTrue);
     expect(controller.dailyBestScores['2026-07-12'], 5);
   });
+
+  test(
+    'drill mastery unlocks hard mode and persists without XP farming',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final controller = await GameController.load();
+      final drill = DailyBreachCatalog.definitions.first;
+      final firstRoute = drill.solutionRoutes.first.id;
+      final secondRoute = drill.solutionRoutes.last.id;
+
+      expect(controller.isHardDrillUnlocked(drill), isFalse);
+      await expectLater(
+        controller.recordDrillResult(
+          definition: drill,
+          difficulty: BreachDifficulty.hard,
+          strokes: 3,
+          routeId: firstRoute,
+        ),
+        throwsStateError,
+      );
+
+      await controller.recordDrillResult(
+        definition: drill,
+        difficulty: BreachDifficulty.chill,
+        strokes: 3,
+        routeId: firstRoute,
+      );
+      expect(controller.isHardDrillUnlocked(drill), isTrue);
+      expect(controller.drillXp, 10);
+
+      await controller.recordDrillResult(
+        definition: drill,
+        difficulty: BreachDifficulty.chill,
+        strokes: 8,
+        routeId: firstRoute,
+      );
+      expect(controller.drillXp, 10);
+      expect(
+        controller.drillProgressFor(drill, BreachDifficulty.chill)!.bestStrokes,
+        3,
+      );
+
+      await controller.recordDrillResult(
+        definition: drill,
+        difficulty: BreachDifficulty.chill,
+        strokes: 4,
+        routeId: secondRoute,
+      );
+      await controller.recordDrillResult(
+        definition: drill,
+        difficulty: BreachDifficulty.hard,
+        strokes: 3,
+        routeId: firstRoute,
+      );
+      expect(controller.drillXp, 40);
+
+      final restored = await GameController.load();
+      expect(restored.drillXp, 40);
+      expect(restored.drillProgressFor(drill, BreachDifficulty.chill)!.routes, {
+        firstRoute,
+        secondRoute,
+      });
+      expect(restored.drillProgressFor(drill, BreachDifficulty.hard)!.routes, {
+        firstRoute,
+      });
+    },
+  );
 
   test('chapter score is submitted only after all four act rooms', () async {
     SharedPreferences.setMockInitialValues({});
