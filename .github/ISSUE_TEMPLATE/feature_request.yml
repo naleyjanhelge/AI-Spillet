@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest a new room, challenge, or quality-of-life improvement.
+title: "[Idea] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are public. Never include personal, sensitive, confidential, or
+        third-party protected information.
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What would make Prompt Heist more fun or easier to use?
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: Why it helps
+      description: Describe the player problem or experience this improves.
+    validations:
+      required: true

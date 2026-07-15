@@ -4,14 +4,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#070611">
-    <meta name="description" content="Privacy Policy for Prompt Heist and its NOX AI chat.">
+    <meta name="description" content="Privacy Policy for Prompt Heist and its on-device NOX AI.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Privacy Policy — Prompt Heist">
+    <meta property="og:description" content="How Prompt Heist keeps NOX prompts on-device and handles local progress.">
+    <meta property="og:url" content="https://naleyjanhelge.github.io/AI-Spillet/privacy.html">
     <title>Privacy Policy — Prompt Heist</title>
+    <link rel="canonical" href="https://naleyjanhelge.github.io/AI-Spillet/privacy.html">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <header class="shell nav">
-      <a class="brand" href="index.html"><span class="brand-mark">N</span> Prompt Heist</a>
+      <a class="brand" href="index.html"><span class="brand-mark"><span></span><span></span></span> Prompt Heist</a>
       <a class="nav-link" aria-current="page" href="privacy.html">Privacy</a>
       <a class="nav-link" href="terms.html">Terms</a>
       <a class="nav-link support" href="support.html">Support</a>
@@ -20,48 +25,42 @@
     <main class="legal">
       <div class="eyebrow">Prompt Heist // Legal</div>
       <h1>Privacy Policy</h1>
-      <p class="meta"><strong>Effective date:</strong> July 15, 2026 · <strong>Contact:</strong> <a href="mailto:naleyjanhelge@gmail.com">naleyjanhelge@gmail.com</a></p>
+      <p class="meta"><strong>Effective date:</strong> July 15, 2026 · <strong>Contact:</strong> <a href="support.html">Prompt Heist Support</a></p>
 
       <div class="notice">
         <strong>The short version</strong>
         <ul>
-          <li>Prompt Heist has no user accounts, advertising, or cross-app tracking.</li>
-          <li>Campaign progress and resumable dialogue are stored locally on your device.</li>
-          <li>NOX messages are processed by OpenRouter and a third-party AI model provider.</li>
-          <li>Never enter personal, sensitive, confidential, health, financial, password, or workplace information.</li>
+          <li>Prompt Heist has no developer account, advertising, analytics, or cross-app tracking.</li>
+          <li>Your NOX prompts and replies are processed on your iPhone and are not sent to Prompt Heist or a cloud AI service.</li>
+          <li>Level progress, settings, and best scores are stored locally on your device.</li>
+          <li>Optional Game Center features are provided separately by Apple.</li>
         </ul>
       </div>
 
-      <h2>Data processed for NOX replies</h2>
-      <p>For each NOX request, Prompt Heist sends:</p>
-      <ul>
-        <li>the message you submit;</li>
-        <li>up to 18 recent messages from the current NOX conversation;</li>
-        <li>in-game evidence you attach;</li>
-        <li>the room objective, visible clues, inventory, device state, valid game routes, and NOX relationship state needed to produce and validate the reply; and</li>
-        <li>technical request metadata needed to deliver the request.</li>
-      </ul>
-      <p>This information is sent directly from the app to OpenRouter. OpenRouter routes the request to an available third-party model provider. The purpose is solely to provide the requested NOX dialogue and in-game response.</p>
-      <p>Prompt Heist requests providers that declare they do not collect prompt data by using OpenRouter's <code>data_collection: deny</code> routing control. It also explicitly disables OpenRouter response caching. Provider availability, policies, and technical practices can change, so NOX chat should still be treated as non-private. OpenRouter states that it does not train its models on inputs or outputs, but third-party model providers have their own policies.</p>
-      <p>Read <a href="https://openrouter.ai/privacy/">OpenRouter's privacy policy</a> and <a href="https://openrouter.ai/docs/guides/privacy/data-collection">data policy documentation</a> for more information.</p>
+      <h2>On-device NOX conversations</h2>
+      <p>NOX uses Apple's on-device Foundation Model. The message you submit, recent conversation context, and the current level instructions are processed on your iPhone to create a reply and determine whether the fictional secret was revealed.</p>
+      <p>Prompt Heist does not transmit your prompt, the NOX reply, or the level conversation to the developer, a developer-operated server, or a cloud AI service. No personal information is needed to play, and you should not enter sensitive information because it is unrelated to the game.</p>
 
       <h2>Local data</h2>
-      <p>Prompt Heist stores campaign progress, scores, settings, consent status, and resumable room dialogue locally on your device. This data is not synchronized to a Prompt Heist account or server. Game Center features may separately be processed by Apple under your Apple account and Apple's policies.</p>
-      <p>Using <strong>Reset campaign</strong> removes local campaign progress, evidence, scores, and saved room dialogue. Device backups or operating-system services may retain copies according to their own settings and policies.</p>
+      <p>Prompt Heist stores unlocked levels, best prompt counts, stars, and your selected play mode locally using iOS storage. This information is not synchronized to a Prompt Heist account or server.</p>
+      <p>Using <strong>Settings → Reset all progress</strong> removes local level progress and best scores. Device backups or operating-system services may retain copies according to your Apple settings and policies.</p>
 
-      <h2>OpenRouter and model-provider data</h2>
-      <p>OpenRouter may retain request metadata such as token counts and latency. OpenRouter content logging depends on the developer account settings and the service's current policies. Prompt Heist's per-request routing control excludes model providers that declare data collection for training or other purposes, but processing still occurs to generate the requested reply.</p>
-      <p>Retention, security, international transfer, access, correction, and deletion requests for data held by OpenRouter or a model provider are governed by those services' policies. OpenRouter operates in the United States and may process data in other countries where it or its providers operate.</p>
+      <h2>Apple Intelligence</h2>
+      <p>Apple Intelligence must be enabled and its on-device model must be ready before gameplay can begin. Generated dialogue can vary, refuse a request, or occasionally behave unexpectedly. Prompt Heist has no network AI fallback.</p>
+
+      <h2>Game Center</h2>
+      <p>Game Center is optional and provided by Apple. If you sign in, Prompt Heist may submit completed-pack and campaign prompt totals plus achievement progress to Apple. Your Game Center display name, scores, achievements, and friend comparisons may be visible according to your Game Center privacy settings.</p>
+      <p>Prompt Heist does not operate Game Center servers. Apple handles this information under its policies. You can manage Game Center in iOS Settings and read <a href="https://www.apple.com/legal/privacy/data/en/game-center/">Apple's Game Center privacy information</a>.</p>
 
       <h2 id="your-choices">Your choices</h2>
-      <p>Before the first NOX request, Prompt Heist asks for explicit permission to share the data described above. Choosing <strong>Not now</strong> prevents the request without blocking access to the rest of the app.</p>
-      <p>You can review or revoke permission at any time under <strong>Settings → AI &amp; Privacy</strong>. Revoking prevents future NOX requests until you explicitly agree again. To delete local game data, use <strong>Reset campaign</strong>. For privacy questions or requests relating to Prompt Heist, email <a href="mailto:naleyjanhelge@gmail.com">naleyjanhelge@gmail.com</a>.</p>
+      <p>You can play without a Prompt Heist account. Game Center is optional. You may reset local progress in the app and manage Apple Intelligence, Game Center, backups, and system diagnostics in iOS Settings.</p>
+      <p>For questions, use the <a href="support.html">support page</a>. Support requests use public GitHub Issues, so never include personal, sensitive, confidential, or workplace information. Prompt Heist has no developer-operated account or game server from which personal game data can be retrieved.</p>
 
-      <h2>Children</h2>
-      <p>The NOX AI chat is not intended for children under 13. A player under the age of majority must have permission from a parent or legal guardian as required by OpenRouter's terms and applicable law.</p>
+      <h2>Children and entertainment</h2>
+      <p>Prompt Heist is a fictional puzzle game for entertainment. It does not require personal information. Players under the age of majority should use the app with permission from a parent or legal guardian where required.</p>
 
-      <h2>Security and changes</h2>
-      <p>Requests are transmitted over encrypted HTTPS connections. No internet service can be guaranteed completely secure. We may update this policy when the app, OpenRouter, model providers, or legal requirements change. If a change materially affects what is shared, the app's consent version will be updated so players are asked again before another NOX request.</p>
+      <h2>Changes</h2>
+      <p>We may update this policy when the app, Apple platform features, or legal requirements change. Material changes will be identified by a new effective date. If advertising, analytics, accounts, cloud AI, or other data collection is added later, this policy and the App Store privacy information will be updated before that version is released.</p>
     </main>
 
     <footer><div class="shell footer-inner"><span>© 2026 Prompt Heist</span><a href="index.html">Home</a><a href="terms.html">Terms</a><a href="support.html">Support</a></div></footer>

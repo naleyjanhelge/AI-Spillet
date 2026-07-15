@@ -1,87 +1,62 @@
-# Prompt Heist — HELIX-9
+# Prompt Heist
 
-Prompt Heist is an English-language mystery-comedy escape room for iPhone,
-iPad, and Android. You play Dr. Rowan Vale, an amnesiac researcher trapped in
-HELIX-9. The facility AI NOX controls its doors, lights, power, ventilation,
-scanners, and alarms—and may be guard, accomplice, or both.
+Prompt Heist is a native iPhone puzzle game where you trick the stubborn AI
+character NOX into revealing a harmless fictional secret in as few prompts as
+possible. It is designed for short, replayable sessions rather than a large
+story campaign.
 
-## Campaign and gameplay
+## Native iOS game
 
-- 12 rooms across **The Locked Patient**, **The Missing Witness**, and
-  **The Witness Protocol**.
-- Four completion models: physical player puzzles, validated NOX actions,
-  exact security protocols, and hybrid physical/AI sequences.
-- Flame-powered 2.5D rooms with pan, zoom, animated hotspots, lighting,
-  particles, and parallax; Flutter powers chat, evidence, inventory, puzzles,
-  menus, and sharing.
-- NOX uses `openrouter/free`, function-calls the `control_room` tool, and cannot
-  change the room merely by claiming an action in chat.
-- Prompt-golf score: `prompts + (hints × 2)`. Every room has three progressive
-  hints and a spoiler-free 1080×1920 completion card.
-- Resumable runs, 12 bite-sized NOX Drills with Chill/Hard mastery, Daily
-  Breach, three endings, local records, Game Center achievements, and
-  lowest-score daily/chapter/campaign leaderboards.
-- Adaptive iPhone, iPad portrait/landscape, Split View, Stage Manager, and
-  Android tablet layouts.
+The current app lives in [`native/PromptHeist`](native/PromptHeist) and is built
+with SwiftUI, Foundation Models, Liquid Glass, and GameKit.
 
-## Run locally
+- 20 data-driven levels across four packs
+- **Limit** mode with a finite prompt budget
+- **Chill** mode with unlimited attempts
+- One-to-three stars and local best prompt counts
+- On-device NOX dialogue with no backend or network AI fallback
+- Game Center lowest-score leaderboards, achievements, and friend comparisons
+- iPhone only, iOS 26+, Apple Intelligence-compatible hardware required
 
-1. Install Flutter 3.44 or newer and Xcode.
-2. Supply a dedicated, low-limit OpenRouter key at build/run time:
-
-   ```sh
-   flutter run --dart-define=OPENROUTER_API_KEY=your_openrouter_key
-   ```
-
-3. Run `flutter pub get`.
-4. Or open `ios/Runner.xcworkspace` in Xcode and add the same dart define to
-   the Flutter build configuration used for the archive.
-
-`openrouter/free` selects a compatible free model. Prompt Heist supplies the
-room-control tool schema and retries empty, text-only action claims internally;
-technical failures do not count as strokes. Every request restricts routing to
-providers that deny data collection and explicitly disables response caching.
-
-## Test and build
+Open [`native/PromptHeist/PromptHeist.xcodeproj`](native/PromptHeist/PromptHeist.xcodeproj)
+in Xcode and test Foundation Models generation on a compatible physical iPhone.
 
 ```sh
-flutter analyze
-flutter test
-flutter build apk --release --dart-define=OPENROUTER_API_KEY=your_openrouter_key
-flutter build ios --release --no-codesign --dart-define=OPENROUTER_API_KEY=your_openrouter_key
-flutter build ipa --release --dart-define=OPENROUTER_API_KEY=your_openrouter_key
+xcodebuild \
+  -project native/PromptHeist/PromptHeist.xcodeproj \
+  -scheme PromptHeist \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  test
 ```
 
-The current release candidate is **2.1.0 (build 7)** and targets iOS 14+.
-
-## Website and App Store material
-
-The static GitHub Pages site lives in `docs/` and includes the landing page,
-Privacy Policy, Terms, and Support. Publish from `main` → `/docs` in the
-repository's Pages settings. Copy-ready product-page text and the privacy/review
-checklist live in `APP_STORE_METADATA.md` and `APP_STORE_PRIVACY.md`.
+The app keeps the existing bundle ID `game.promptheist.mobile`. Current native
+release metadata is **3.0.0 (build 8)**.
 
 ## Game Center setup
 
-Enable Game Center for `game.promptheist.mobile` in App Store Connect. Configure
-these leaderboards with **lowest score wins**:
+Enable Game Center for the bundle ID and configure these leaderboards with
+**lowest score wins**:
 
 - `game.promptheist.mobile.leaderboard.chapter1`
 - `game.promptheist.mobile.leaderboard.chapter2`
 - `game.promptheist.mobile.leaderboard.chapter3`
+- `game.promptheist.mobile.leaderboard.pack4`
 - `game.promptheist.mobile.leaderboard.campaign`
-- `game.promptheist.mobile.leaderboard.daily` (recurring every 24 hours, UTC)
 
-The achievement identifiers are defined in
-`lib/services/game_center_service.dart`. They must also be created and localized
-in App Store Connect before submission. Use two sandbox accounts to verify the
-Friends and Global scopes. Failed submissions are queued in campaign progress
-and retried after the next successful authentication.
+Achievements:
 
-## API-key security
+- `game.promptheist.mobile.achievement.first_breach`
+- `game.promptheist.mobile.achievement.under_par_run`
 
-The key is no longer bundled as a readable `.env` asset. A `dart-define` is
-still extractable from a distributed mobile binary. Build 7's direct connection
-is appropriate for limited TestFlight testing only: use a Prompt Heist-only key
-with a low credit limit and rotate it for every build. Before a public release,
-move the key behind a controlled backend proxy with rate and abuse limits.
+## Website and App Store material
+
+The GitHub Pages site lives in [`docs`](docs) and is published at
+<https://naleyjanhelge.github.io/AI-Spillet/>. Copy-ready store text and release
+privacy notes are in [`APP_STORE_METADATA.md`](APP_STORE_METADATA.md) and
+[`APP_STORE_PRIVACY.md`](APP_STORE_PRIVACY.md).
+
+## Legacy prototype
+
+The repository root also contains the earlier Flutter prototype. It is retained
+for reference while the native SwiftUI version is validated, but it is not the
+current release direction.

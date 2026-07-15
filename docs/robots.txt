@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://naleyjanhelge.github.io/AI-Spillet/sitemap.xml

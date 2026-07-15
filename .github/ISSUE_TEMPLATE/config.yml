@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Privacy policy
+    url: https://naleyjanhelge.github.io/AI-Spillet/privacy.html
+    about: Read what is processed by NOX, OpenRouter, and model providers.
+  - name: Support guide
+    url: https://naleyjanhelge.github.io/AI-Spillet/support.html
+    about: Check common fixes before opening a public issue.

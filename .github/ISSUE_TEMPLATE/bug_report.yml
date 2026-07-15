@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a reproducible Prompt Heist problem without personal data.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Prompt Heist. This issue will be public.
+        Never include names, email addresses, passwords, workplace information,
+        NOX conversations, or other personal, sensitive, or confidential data.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Campaign room
+        - NOX Drills
+        - Daily Breach
+        - AI and OpenRouter
+        - Game Center
+        - Audio or accessibility
+        - Website or policy
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Prompt Heist version
+      placeholder: "2.1.0 (7)"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and operating system
+      placeholder: "iPhone 15, iOS 18.5"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the result without pasting NOX dialogue or sensitive data.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Opened ...
+        2. Tapped ...
+        3. Saw ...
+    validations:
+      required: true
