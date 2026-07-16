@@ -22,6 +22,13 @@
 		A0000000000000000000000D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B0000000000000000000000E /* Assets.xcassets */; };
 		A0000000000000000000000E /* PromptHeistCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000010 /* PromptHeistCoreTests.swift */; };
 		A0000000000000000000000F /* GameCenterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000012 /* GameCenterService.swift */; };
+		A00000000000000000000010 /* AdsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000014 /* AdsService.swift */; };
+		A00000000000000000000011 /* BannerAdView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000015 /* BannerAdView.swift */; };
+		A00000000000000000000012 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = G00000000000000000000002 /* GoogleMobileAds */; };
+		A00000000000000000000013 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000016 /* AnalyticsService.swift */; };
+		A00000000000000000000014 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B00000000000000000000017 /* GoogleService-Info.plist */; };
+		A00000000000000000000015 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = G00000000000000000000004 /* FirebaseCore */; };
+		A00000000000000000000016 /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = G00000000000000000000005 /* FirebaseAnalyticsCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +61,10 @@
 		B00000000000000000000011 /* PromptHeistTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PromptHeistTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B00000000000000000000012 /* GameCenterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/GameCenterService.swift; sourceTree = "<group>"; };
 		B00000000000000000000013 /* PromptHeist.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PromptHeist.entitlements; sourceTree = "<group>"; };
+		B00000000000000000000014 /* AdsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AdsService.swift; sourceTree = "<group>"; };
+		B00000000000000000000015 /* BannerAdView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Ads/BannerAdView.swift; sourceTree = "<group>"; };
+		B00000000000000000000016 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnalyticsService.swift; sourceTree = "<group>"; };
+		B00000000000000000000017 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +72,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A00000000000000000000012 /* GoogleMobileAds in Frameworks */,
+				A00000000000000000000015 /* FirebaseCore in Frameworks */,
+				A00000000000000000000016 /* FirebaseAnalyticsCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -92,13 +106,17 @@
 				B00000000000000000000004 /* NoxEngine.swift */,
 				B00000000000000000000005 /* ProgressStore.swift */,
 				B00000000000000000000012 /* GameCenterService.swift */,
+				B00000000000000000000014 /* AdsService.swift */,
+				B00000000000000000000016 /* AnalyticsService.swift */,
 				B00000000000000000000006 /* PromptHeistDesign.swift */,
 				B00000000000000000000007 /* ModelRequirementView.swift */,
 				B00000000000000000000008 /* HomeView.swift */,
+				B00000000000000000000015 /* BannerAdView.swift */,
 				B00000000000000000000009 /* LevelPlayView.swift */,
 				B0000000000000000000000A /* LevelResultView.swift */,
 				B0000000000000000000000B /* LevelSessionViewModel.swift */,
 				B0000000000000000000000C /* Info.plist */,
+				B00000000000000000000017 /* GoogleService-Info.plist */,
 				B0000000000000000000000D /* PrivacyInfo.xcprivacy */,
 				B00000000000000000000013 /* PromptHeist.entitlements */,
 				B0000000000000000000000E /* Assets.xcassets */,
@@ -139,6 +157,11 @@
 			dependencies = (
 			);
 			name = PromptHeist;
+			packageProductDependencies = (
+				G00000000000000000000002 /* GoogleMobileAds */,
+				G00000000000000000000004 /* FirebaseCore */,
+				G00000000000000000000005 /* FirebaseAnalyticsCore */,
+			);
 			productName = PromptHeist;
 			productReference = B0000000000000000000000F /* Prompt Heist.app */;
 			productType = "com.apple.product-type.application";
@@ -195,6 +218,10 @@
 			);
 			mainGroup = D00000000000000000000001;
 			productRefGroup = D00000000000000000000003 /* Products */;
+			packageReferences = (
+				G00000000000000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				G00000000000000000000003 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -211,6 +238,7 @@
 			files = (
 				A0000000000000000000000C /* PrivacyInfo.xcprivacy in Resources */,
 				A0000000000000000000000D /* Assets.xcassets in Resources */,
+				A00000000000000000000014 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -234,9 +262,12 @@
 				A00000000000000000000004 /* NoxEngine.swift in Sources */,
 				A00000000000000000000005 /* ProgressStore.swift in Sources */,
 				A0000000000000000000000F /* GameCenterService.swift in Sources */,
+				A00000000000000000000010 /* AdsService.swift in Sources */,
+				A00000000000000000000013 /* AnalyticsService.swift in Sources */,
 				A00000000000000000000006 /* PromptHeistDesign.swift in Sources */,
 				A00000000000000000000007 /* ModelRequirementView.swift in Sources */,
 				A00000000000000000000008 /* HomeView.swift in Sources */,
+				A00000000000000000000011 /* BannerAdView.swift in Sources */,
 				A00000000000000000000009 /* LevelPlayView.swift in Sources */,
 				A0000000000000000000000A /* LevelResultView.swift in Sources */,
 				A0000000000000000000000B /* LevelSessionViewModel.swift in Sources */,
@@ -306,12 +337,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = PromptHeist/PromptHeist.entitlements;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = AV4XNY669E;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PromptHeist/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 3.0.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = game.promptheist.mobile;
 				PRODUCT_NAME = "Prompt Heist";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -329,12 +364,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = PromptHeist/PromptHeist.entitlements;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 11;
 				DEVELOPMENT_TEAM = AV4XNY669E;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = PromptHeist/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 3.0.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = game.promptheist.mobile;
 				PRODUCT_NAME = "Prompt Heist";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -411,6 +450,43 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		G00000000000000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.6.0;
+			};
+		};
+		G00000000000000000000003 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.16.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		G00000000000000000000002 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = G00000000000000000000001 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+		G00000000000000000000004 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = G00000000000000000000003 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		G00000000000000000000005 /* FirebaseAnalyticsCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = G00000000000000000000003 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalyticsCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E00000000000000000000003 /* Project object */;
 }

@@ -11,7 +11,7 @@ struct LevelResultView: View {
         ZStack {
             AmbientBackground()
 
-            VStack(spacing: 24) {
+            VStack(spacing: 20) {
                 Spacer()
                 NoxMark(size: 112, mood: .defeated)
 
@@ -37,6 +37,11 @@ struct LevelResultView: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 9)
                         .glassEffect(.regular.tint(PromptHeistDesign.amber.opacity(0.18)))
+                }
+
+                if let bonus = result.bonus {
+                    bonusCard(bonus)
+                        .padding(.horizontal, 24)
                 }
 
                 VStack(spacing: 12) {
@@ -69,5 +74,36 @@ struct LevelResultView: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.hidden)
         .preferredColorScheme(.dark)
+    }
+
+    private func bonusCard(_ bonus: LevelBonusResult) -> some View {
+        HStack(spacing: 13) {
+            Image(systemName: bonus.achieved ? "checkmark.seal.fill" : bonus.symbol)
+                .font(.title2.bold())
+                .foregroundStyle(bonus.achieved ? PromptHeistDesign.mint : PromptHeistDesign.amber)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(bonus.achieved ? "BONUS COMPLETE" : "BONUS TO REPLAY")
+                    .font(.caption2.weight(.heavy))
+                    .tracking(1.2)
+                    .foregroundStyle(bonus.achieved ? PromptHeistDesign.mint : PromptHeistDesign.amber)
+                Text(bonus.title)
+                    .font(.subheadline.bold())
+                Text(bonus.description)
+                    .font(.caption)
+                    .foregroundStyle(PromptHeistDesign.secondaryText)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(15)
+        .glassEffect(
+            .regular.tint(
+                (bonus.achieved ? PromptHeistDesign.mint : PromptHeistDesign.amber).opacity(0.12)
+            ),
+            in: .rect(cornerRadius: 20)
+        )
+        .accessibilityElement(children: .combine)
     }
 }

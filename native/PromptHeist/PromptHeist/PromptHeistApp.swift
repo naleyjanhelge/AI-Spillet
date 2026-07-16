@@ -1,14 +1,29 @@
+import FirebaseCore
 import SwiftUI
+import UIKit
+
+final class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        FirebaseApp.configure()
+        return true
+    }
+}
 
 @main
 struct PromptHeistApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var progress = ProgressStore()
     @StateObject private var gameCenter = GameCenterService()
+    @StateObject private var ads = AdsService.shared
     private let engine = NoxEngine()
 
     var body: some Scene {
         WindowGroup {
             RootView(progress: progress, gameCenter: gameCenter, engine: engine)
+                .environmentObject(ads)
         }
     }
 }
@@ -19,6 +34,7 @@ private struct RootView: View {
     let engine: NoxEngine
 
     @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var ads: AdsService
     @AppStorage("native.appleIntelligenceRequirementSeen") private var requirementSeen = false
     @State private var availability: LocalModelAvailability
 
@@ -59,6 +75,7 @@ private struct RootView: View {
         }
         .task {
             gameCenter.authenticate()
+            ads.prepare()
         }
     }
 

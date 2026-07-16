@@ -6,7 +6,7 @@ import 'prompt_heist_theme.dart';
 
 const openRouterPrivacyUrl = 'https://openrouter.ai/privacy';
 const promptHeistPrivacyUrl =
-    'https://naleyjanhelge.github.io/AI-Spillet/privacy.html';
+    'https://naleyjanhelge.github.io/Prompt-Heist/privacy.html';
 
 /// Presents the just-in-time permission required before any player-authored
 /// content is sent to OpenRouter or an AI model provider.

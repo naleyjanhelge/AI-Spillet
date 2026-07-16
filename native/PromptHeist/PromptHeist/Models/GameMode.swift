@@ -52,4 +52,12 @@ struct LevelResult: Identifiable, Equatable {
     let prompts: Int
     let stars: Int
     let isNewBest: Bool
+    let bonus: LevelBonusResult?
+}
+
+struct LevelBonusResult: Equatable {
+    let title: String
+    let description: String
+    let symbol: String
+    let achieved: Bool
 }

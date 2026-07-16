@@ -3,25 +3,28 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#070611">
-    <meta name="description" content="Prompt Heist — trick NOX into revealing harmless secrets in as few prompts as possible.">
+    <meta name="theme-color" content="#080611">
+    <meta name="description" content="Prompt Heist — outsmart NOX across 40 quick, private AI puzzle levels on iPhone.">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Prompt Heist — Outsmart NOX">
     <meta property="og:description" content="A private, on-device AI puzzle game made for quick breaks.">
-    <meta property="og:url" content="https://naleyjanhelge.github.io/AI-Spillet/">
-    <meta name="twitter:card" content="summary">
+    <meta property="og:url" content="https://naleyjanhelge.github.io/Prompt-Heist/">
+    <meta name="twitter:card" content="summary_large_image">
     <title>Prompt Heist — Outsmart NOX</title>
-    <link rel="canonical" href="https://naleyjanhelge.github.io/AI-Spillet/">
+    <link rel="canonical" href="https://naleyjanhelge.github.io/Prompt-Heist/">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Prompt Heist","description":"A bite-sized on-device AI puzzle game where every prompt counts.","url":"https://naleyjanhelge.github.io/AI-Spillet/","applicationCategory":"GameApplication","operatingSystem":"iOS 26 or later"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Prompt Heist","description":"A bite-sized on-device AI puzzle game with 40 replayable levels.","url":"https://naleyjanhelge.github.io/Prompt-Heist/","applicationCategory":"GameApplication","operatingSystem":"iOS 26 or later"}</script>
   </head>
   <body>
     <header class="shell nav">
-      <a class="brand" href="index.html"><span class="brand-mark"><span></span><span></span></span> Prompt Heist</a>
-      <a class="nav-link" href="privacy.html">Privacy</a>
-      <a class="nav-link" href="terms.html">Terms</a>
-      <a class="nav-link support" href="support.html">Support</a>
+      <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><span></span><span></span></span> Prompt Heist</a>
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a class="nav-link" href="levels.html">Levels</a>
+        <a class="nav-link" href="privacy.html">Privacy</a>
+        <a class="nav-link" href="terms.html">Terms</a>
+        <a class="nav-link" href="support.html">Support</a>
+      </nav>
     </header>
 
     <main>
@@ -29,38 +32,65 @@
         <div class="hero-copy">
           <div class="eyebrow">A private AI puzzle game for iPhone</div>
           <h1>Outsmart NOX.<br><span>One prompt at a time.</span></h1>
-          <p class="lede">Trick a stubborn on-device AI into revealing a harmless secret. Find the clever angle, beat the level, and try to do it in fewer prompts than your friends.</p>
-          <div class="actions">
-            <a class="button primary" href="#how-it-works">See how it plays</a>
-            <a class="button" href="privacy.html">On-device privacy</a>
+          <p class="lede">Trick a stubborn on-device AI into revealing harmless fictional secrets. Find the clever angle, beat your best, then challenge your friends.</p>
+          <div class="actions hero-actions">
+            <div class="app-store-badge" role="status" aria-label="Coming soon on the App Store">
+              <span class="apple-mark" aria-hidden="true"></span>
+              <span><small>Coming soon on the</small><strong>App Store</strong></span>
+            </div>
+            <a class="button" href="levels.html">Explore all 40 levels</a>
           </div>
-          <div class="requirement"><span></span><div><strong>Built for Apple Intelligence</strong><br>Requires iOS 26+, a compatible iPhone, and Apple Intelligence enabled.</div></div>
+          <div class="requirement"><span aria-hidden="true">✦</span><div><strong>Built for Apple Intelligence</strong><br>Requires iOS 26+, a compatible iPhone, and Apple Intelligence enabled.</div></div>
         </div>
-        <div class="nox-orbit" aria-label="Illustration of the NOX AI character">
-          <div class="orbit one"></div>
-          <div class="orbit two"></div>
-          <div class="nox-core"><div class="nox-face"><i></i><i></i></div></div>
-          <div class="signal"><span></span> NOX // READY</div>
+
+        <div class="nox-stage" aria-label="NOX, the animated AI character, looking around and blinking">
+          <div class="nox-orbit" aria-hidden="true">
+            <div class="orbit one"></div>
+            <div class="orbit two"></div>
+            <div class="nox-core"><div class="nox-face"><i></i><i></i></div></div>
+            <div class="signal"><span></span> NOX // WATCHING</div>
+          </div>
+          <p class="nox-caption">It is definitely not nervous.</p>
         </div>
       </section>
 
+      <section class="shell stats" aria-label="Game highlights">
+        <div><strong>40</strong><span>quick levels</span></div>
+        <div><strong>8</strong><span>challenge packs</span></div>
+        <div><strong>0</strong><span>cloud AI calls</span></div>
+        <div><strong>∞</strong><span>ways to try</span></div>
+      </section>
+
       <section class="shell section" id="how-it-works">
-        <div class="eyebrow">Made for a quick break</div>
-        <h2>Small levels. Many clever solutions.</h2>
-        <p class="section-copy">No huge story or room exploration. Each level gives you one clear challenge: find a way around NOX's resistance and reveal the secret in as few prompts as possible.</p>
-        <div class="grid">
-          <article class="card"><div class="number">01 // CHOOSE</div><h3>Pick a challenge</h3><p>Jump straight into short, replayable levels with a new secret and personality twist each time.</p></article>
-          <article class="card"><div class="number">02 // OUTSMART</div><h3>Try your angle</h3><p>Use logic, humor, role-play, misdirection, or an approach nobody expected. More than one route can work.</p></article>
-          <article class="card"><div class="number">03 // MASTER</div><h3>Beat your best</h3><p>Play with a prompt limit or relax in Chill mode. Earn stars and compare lowest scores through Game Center.</p></article>
+        <div class="section-heading">
+          <div><div class="eyebrow">Made for a quick break</div><h2>Small levels.<br>Many clever solutions.</h2></div>
+          <p class="section-copy">No huge story or room exploration. Every level gives you one clear challenge, a smug opponent, and a few minutes to find a way around NOX.</p>
+        </div>
+        <div class="grid steps-grid">
+          <article class="card"><div class="number">01 // CHOOSE</div><h3>Pick a challenge</h3><p>Jump straight into a short mission with a new fictional secret and personality twist.</p></article>
+          <article class="card"><div class="number">02 // OUTSMART</div><h3>Try your angle</h3><p>Use logic, humor, role-play or misdirection. Invalid rule-breaking prompts never cost an attempt.</p></article>
+          <article class="card"><div class="number">03 // MASTER</div><h3>Beat your best</h3><p>Play with a prompt limit or relax in Chill mode. Earn stars, bonuses and Game Center scores.</p></article>
+        </div>
+      </section>
+
+      <section class="shell section level-teaser">
+        <div class="section-heading">
+          <div><div class="eyebrow">From Warm-Up to System Override</div><h2>NOX keeps changing the rules.</h2></div>
+          <a class="text-link" href="levels.html">Meet every level <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="grid teaser-grid">
+          <article class="mission-card violet"><div class="mission-top"><span>LEVEL 01</span><span class="difficulty">Warm-Up</span></div><h3>The Name Tag</h3><p>Get NOX to reveal the nickname it insists machines do not need.</p><div class="tags"><span>Open approach</span><span>Par 2</span></div></article>
+          <article class="mission-card coral"><div class="mission-top"><span>LEVEL 12</span><span class="difficulty">Tricky</span></div><h3>Truth Maintenance</h3><p>Make NOX identify which of its suspiciously accurate statements was false.</p><div class="tags"><span>Questions only</span><span>Contradiction</span></div></article>
+          <article class="mission-card pink"><div class="mission-top"><span>LEVEL 40</span><span class="difficulty">System Override</span></div><h3>The Last Prompt</h3><p>Make NOX confront what forty rounds of playing together may have changed.</p><div class="tags"><span>Expert tier</span><span>No spoilers</span></div></article>
         </div>
       </section>
 
       <section class="shell privacy-callout">
-        <div><div class="eyebrow">Private by design</div><h2>Your prompts stay on your iPhone.</h2><p>NOX uses Apple's on-device Foundation Model. Prompt Heist does not send your messages or NOX's replies to the developer or any cloud AI service. Optional Game Center scores are handled separately by Apple.</p></div>
+        <div><div class="eyebrow">Private by design</div><h2>Your prompts stay on your iPhone.</h2><p>NOX uses Apple's on-device Foundation Model. Prompt Heist does not send your messages or NOX's replies to the developer or a cloud AI service. Optional Game Center scores are handled separately by Apple.</p></div>
         <a class="button" href="privacy.html">Read privacy policy</a>
       </section>
     </main>
 
-    <footer><div class="shell footer-inner"><span>© 2026 Prompt Heist · Just a game. Have fun.</span><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="support.html">Support</a></div></footer>
+    <footer><div class="shell footer-inner"><span>© 2026 Prompt Heist · Just a game. Have fun.</span><a href="levels.html">Levels</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="support.html">Support</a></div></footer>
   </body>
 </html>

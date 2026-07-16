@@ -1,6 +1,6 @@
 # Prompt Heist — App Store metadata
 
-Prepared for **3.0.0 (build 8)**. The game and store copy are English.
+Prepared for **3.0.0 (build 11)**. The game and store copy are English.
 
 ## Product page
 
@@ -39,6 +39,7 @@ QUICK TO PLAY
 • Jump straight into short, replayable levels
 • Choose Limit mode for a finite prompt budget
 • Choose Chill mode when you just want to experiment
+• Face one-shot, forbidden-word, question-only, word-limit, and role-play challenges
 • Continue instantly to the next challenge
 
 MANY WAYS TO WIN
@@ -51,6 +52,7 @@ MANY WAYS TO WIN
 BEAT YOUR BEST
 
 • Earn up to three stars on every level
+• Complete optional bonus goals for extra replay value
 • Track your lowest prompt count
 • Compare completed-pack scores with friends and global players through Game Center
 • Unlock more level packs as you play
@@ -66,21 +68,25 @@ Game Center is optional and handled separately by Apple.
 ## URLs
 
 **Marketing URL**  
-https://naleyjanhelge.github.io/AI-Spillet/
+https://naleyjanhelge.github.io/Prompt-Heist/
 
 **Support URL**  
-https://naleyjanhelge.github.io/AI-Spillet/support.html
+https://naleyjanhelge.github.io/Prompt-Heist/support.html
 
 **Privacy Policy URL**  
-https://naleyjanhelge.github.io/AI-Spillet/privacy.html
+https://naleyjanhelge.github.io/Prompt-Heist/privacy.html
 
 **Privacy Choices URL**  
-https://naleyjanhelge.github.io/AI-Spillet/privacy.html#your-choices
+https://naleyjanhelge.github.io/Prompt-Heist/privacy.html#your-choices
 
 ## What's New in 3.0.0
 
 - A completely redesigned, native SwiftUI Prompt Heist.
-- 20 quick NOX challenges across four level packs.
+- 40 quick NOX challenges across eight level packs.
+- New After Hours and System Override post-campaign packs.
+- Office Chaos and a five-level Black Box hard mode.
+- Special one-shot, forbidden-word, question-only, role-play, and contradiction rules.
+- Optional bonus goals that reward clever and concise solutions.
 - Private NOX dialogue powered by Apple's on-device Foundation Model.
 - Limit and Chill play styles.
 - Stars, local best scores, and faster level-to-level play.
@@ -109,12 +115,15 @@ Review path:
 6. Game Center is optional; use the button on Home to view leaderboards.
 
 NOX prompts and replies are not transmitted by Prompt Heist. The app has no
-developer account, advertising, analytics, or cross-app tracking.
+developer account. Privacy-safe Firebase Analytics events measure level starts
+and results without prompt content or IDFA support. Google AdMob banners appear
+on Home but are hidden throughout level gameplay, with consent requested where
+required.
 
 ## Release selections
 
 - Version: `3.0.0`
-- Build: `8`
+- Build: `11`
 - Bundle ID: `game.promptheist.mobile`
 - Minimum OS: `iOS 26.0`
 - Devices: iPhone only; Apple Intelligence-compatible hardware required

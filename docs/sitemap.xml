@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://naleyjanhelge.github.io/AI-Spillet/</loc>
+    <loc>https://naleyjanhelge.github.io/Prompt-Heist/</loc>
+    <lastmod>2026-07-16</lastmod>
+  </url>
+  <url>
+    <loc>https://naleyjanhelge.github.io/Prompt-Heist/levels.html</loc>
+    <lastmod>2026-07-16</lastmod>
+  </url>
+  <url>
+    <loc>https://naleyjanhelge.github.io/Prompt-Heist/privacy.html</loc>
     <lastmod>2026-07-15</lastmod>
   </url>
   <url>
-    <loc>https://naleyjanhelge.github.io/AI-Spillet/privacy.html</loc>
+    <loc>https://naleyjanhelge.github.io/Prompt-Heist/terms.html</loc>
     <lastmod>2026-07-15</lastmod>
   </url>
   <url>
-    <loc>https://naleyjanhelge.github.io/AI-Spillet/terms.html</loc>
-    <lastmod>2026-07-15</lastmod>
-  </url>
-  <url>
-    <loc>https://naleyjanhelge.github.io/AI-Spillet/support.html</loc>
+    <loc>https://naleyjanhelge.github.io/Prompt-Heist/support.html</loc>
     <lastmod>2026-07-15</lastmod>
   </url>
 </urlset>

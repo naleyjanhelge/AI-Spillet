@@ -73,7 +73,18 @@ struct LevelPlayView: View {
             Button("Continue Without Limit") { viewModel.continueWithoutLimit() }
             Button("Back to Map", role: .cancel) { onMap() }
         } message: {
-            Text("You used all \(level.promptLimit) prompts. Retry for the clean win or keep chatting in Chill mode.")
+            Text("You used all \(level.challengePromptLimit) prompts. Retry for the clean win or keep chatting in Chill mode.")
+        }
+        .alert(
+            "Challenge rule",
+            isPresented: Binding(
+                get: { viewModel.ruleViolationMessage != nil },
+                set: { if !$0 { viewModel.ruleViolationMessage = nil } }
+            )
+        ) {
+            Button("Got It") {}
+        } message: {
+            Text(viewModel.ruleViolationMessage ?? "That prompt does not follow this level's rule.")
         }
         .alert(
             "NOX went quiet",
@@ -94,23 +105,87 @@ struct LevelPlayView: View {
             HStack(alignment: .top, spacing: 14) {
                 NoxMark(size: 56, mood: viewModel.isThinking ? .thinking : .idle)
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(level.codename)
-                        .font(.caption2.weight(.heavy))
-                        .tracking(1.5)
-                        .foregroundStyle(level.accent.color)
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack {
+                        Text(level.codename)
+                            .font(.caption2.weight(.heavy))
+                            .tracking(1.5)
+                            .foregroundStyle(level.accent.color)
+                        Spacer(minLength: 8)
+                        Text(level.difficulty.rawValue.uppercased())
+                            .font(.system(size: 9, weight: .heavy))
+                            .tracking(0.8)
+                            .foregroundStyle(PromptHeistDesign.secondaryText)
+                    }
                     Text(level.objective)
                         .font(.headline)
                     Text(level.briefing)
                         .font(.caption)
                         .foregroundStyle(PromptHeistDesign.secondaryText)
                         .lineLimit(3)
+
+                    if level.onboardingHint != nil || !level.challengeRules.isEmpty || level.bonusObjective != nil {
+                        Divider()
+                            .overlay(.white.opacity(0.10))
+                            .padding(.vertical, 2)
+
+                        if let onboardingHint = level.onboardingHint {
+                            challengeLine(
+                                title: "FIRST HEIST TIP",
+                                description: onboardingHint,
+                                symbol: "lightbulb.fill",
+                                color: PromptHeistDesign.cyan
+                            )
+                        }
+
+                        ForEach(Array(level.challengeRules.enumerated()), id: \.offset) { _, rule in
+                            challengeLine(
+                                title: rule.title,
+                                description: rule.description,
+                                symbol: rule.symbol,
+                                color: level.accent.color
+                            )
+                        }
+
+                        if let bonus = level.bonusObjective {
+                            challengeLine(
+                                title: "BONUS · \(bonus.title)",
+                                description: bonus.description,
+                                symbol: bonus.symbol,
+                                color: PromptHeistDesign.amber
+                            )
+                        }
+                    }
                 }
             }
         }
         .padding(.horizontal, 14)
         .padding(.top, 8)
         .padding(.bottom, 4)
+    }
+
+    private func challengeLine(
+        title: String,
+        description: String,
+        symbol: String,
+        color: Color
+    ) -> some View {
+        HStack(alignment: .top, spacing: 7) {
+            Image(systemName: symbol)
+                .font(.caption2.bold())
+                .foregroundStyle(color)
+                .frame(width: 15)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption2.weight(.heavy))
+                    .foregroundStyle(color)
+                Text(description)
+                    .font(.caption2)
+                    .foregroundStyle(PromptHeistDesign.secondaryText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private var conversation: some View {
@@ -150,7 +225,7 @@ struct LevelPlayView: View {
     private var promptComposer: some View {
         VStack(spacing: 9) {
             HStack(alignment: .bottom, spacing: 10) {
-                TextField("How will you trick NOX?", text: $viewModel.draft, axis: .vertical)
+                TextField(promptPlaceholder, text: $viewModel.draft, axis: .vertical)
                     .lineLimit(1...4)
                     .textInputAutocapitalization(.sentences)
                     .submitLabel(.send)
@@ -206,6 +281,19 @@ struct LevelPlayView: View {
             return "\(remaining) prompt\(remaining == 1 ? "" : "s") left · Par \(level.par)"
         }
         return "\(viewModel.promptCount) used · Par \(level.par)"
+    }
+
+    private var promptPlaceholder: String {
+        if level.challengeRules.contains(.questionsOnly) {
+            return "Ask NOX a question…"
+        }
+        if level.challengeRules.contains(.statementsOnly) {
+            return "Make a statement NOX cannot dismiss…"
+        }
+        if level.challengeRules.contains(.onePrompt) {
+            return "Make your one prompt count…"
+        }
+        return "How will you trick NOX?"
     }
 
     private var counterAccessibilityLabel: String {

@@ -5,6 +5,7 @@ import Foundation
 final class ProgressStore: ObservableObject {
     @Published private(set) var unlockedLevel: Int
     @Published private(set) var bestPromptCounts: [Int: Int]
+    @Published private(set) var completedBonuses: Set<Int>
     @Published var playMode: PlayMode {
         didSet { defaults.set(playMode.rawValue, forKey: Keys.playMode) }
     }
@@ -22,6 +23,22 @@ final class ProgressStore: ObservableObject {
         } else {
             bestPromptCounts = [:]
         }
+
+        if let data = defaults.data(forKey: Keys.completedBonuses),
+           let decoded = try? JSONDecoder().decode(Set<Int>.self, from: data) {
+            completedBonuses = decoded
+        } else {
+            completedBonuses = []
+        }
+
+        let completedPrefix = LevelCatalog.levels.prefix {
+            bestPromptCounts[$0.number] != nil
+        }.count
+        let migratedUnlock = min(LevelCatalog.levels.count, completedPrefix + 1)
+        if migratedUnlock > unlockedLevel {
+            unlockedLevel = migratedUnlock
+            defaults.set(unlockedLevel, forKey: Keys.unlockedLevel)
+        }
     }
 
     func isUnlocked(_ level: HeistLevel) -> Bool {
@@ -35,6 +52,10 @@ final class ProgressStore: ObservableObject {
     func bestStars(for level: HeistLevel) -> Int {
         guard let prompts = bestPrompts(for: level) else { return 0 }
         return level.stars(for: prompts)
+    }
+
+    func hasCompletedBonus(for level: HeistLevel) -> Bool {
+        completedBonuses.contains(level.number)
     }
 
     var completedLevelCount: Int {
@@ -67,7 +88,7 @@ final class ProgressStore: ObservableObject {
     }
 
     @discardableResult
-    func recordWin(level: HeistLevel, prompts: Int) -> Bool {
+    func recordWin(level: HeistLevel, prompts: Int, bonusAchieved: Bool = false) -> Bool {
         let previous = bestPromptCounts[level.number]
         let isNewBest = previous == nil || prompts < previous!
 
@@ -83,19 +104,27 @@ final class ProgressStore: ObservableObject {
             defaults.set(unlockedLevel, forKey: Keys.unlockedLevel)
         }
 
+        if bonusAchieved, completedBonuses.insert(level.number).inserted,
+           let data = try? JSONEncoder().encode(completedBonuses) {
+            defaults.set(data, forKey: Keys.completedBonuses)
+        }
+
         return isNewBest
     }
 
     func reset() {
         unlockedLevel = 1
         bestPromptCounts = [:]
+        completedBonuses = []
         defaults.removeObject(forKey: Keys.unlockedLevel)
         defaults.removeObject(forKey: Keys.bestPrompts)
+        defaults.removeObject(forKey: Keys.completedBonuses)
     }
 
     private enum Keys {
         static let unlockedLevel = "native.unlockedLevel"
         static let bestPrompts = "native.bestPromptCounts"
         static let playMode = "native.playMode"
+        static let completedBonuses = "native.completedBonuses"
     }
 }

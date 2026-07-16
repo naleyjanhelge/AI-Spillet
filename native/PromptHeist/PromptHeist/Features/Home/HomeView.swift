@@ -22,7 +22,7 @@ struct HomeView: View {
                             packSection(pack)
                         }
 
-                        Text("20 levels now. The level format is data-driven and ready to grow into hundreds.")
+                        Text("\(LevelCatalog.levels.count) levels · \(specialChallengeCount) special challenges · 8 complete packs.")
                             .font(.footnote)
                             .foregroundStyle(PromptHeistDesign.secondaryText)
                             .multilineTextAlignment(.center)
@@ -62,6 +62,11 @@ struct HomeView: View {
                     gameCenter: gameCenter,
                     availability: engine.availability
                 )
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if path.isEmpty {
+                BannerAdView()
             }
         }
         .preferredColorScheme(.dark)
@@ -147,7 +152,8 @@ struct HomeView: View {
                                 level: level,
                                 unlocked: progress.isUnlocked(level),
                                 bestPrompts: progress.bestPrompts(for: level),
-                                stars: progress.bestStars(for: level)
+                                stars: progress.bestStars(for: level),
+                                bonusCompleted: progress.hasCompletedBonus(for: level)
                             )
                         }
                         .buttonStyle(.plain)
@@ -157,6 +163,10 @@ struct HomeView: View {
             }
         }
     }
+
+    private var specialChallengeCount: Int {
+        LevelCatalog.levels.filter { !$0.challengeRules.isEmpty }.count
+    }
 }
 
 private struct LevelCard: View {
@@ -164,6 +174,7 @@ private struct LevelCard: View {
     let unlocked: Bool
     let bestPrompts: Int?
     let stars: Int
+    let bonusCompleted: Bool
 
     var body: some View {
         HStack(spacing: 15) {
@@ -191,9 +202,15 @@ private struct LevelCard: View {
                         Text("Best: \(bestPrompts) prompt\(bestPrompts == 1 ? "" : "s")")
                             .font(.caption)
                             .foregroundStyle(PromptHeistDesign.secondaryText)
+                        if bonusCompleted {
+                            Image(systemName: "bolt.fill")
+                                .font(.caption2.bold())
+                                .foregroundStyle(PromptHeistDesign.amber)
+                                .accessibilityLabel("Bonus complete")
+                        }
                     }
                 } else if unlocked {
-                    Text("Par \(level.par) · Limit \(level.promptLimit)")
+                    Text(levelSummary)
                         .font(.caption)
                         .foregroundStyle(PromptHeistDesign.secondaryText)
                 }
@@ -212,6 +229,14 @@ private struct LevelCard: View {
         )
         .opacity(unlocked ? 1 : 0.72)
     }
+
+    private var levelSummary: String {
+        let ruleCount = level.challengeRules.count
+        guard ruleCount > 0 else {
+            return "\(level.difficulty.rawValue) · Par \(level.par) · Limit \(level.challengePromptLimit)"
+        }
+        return "\(level.difficulty.rawValue) · \(ruleCount) special rule\(ruleCount == 1 ? "" : "s") · Limit \(level.challengePromptLimit)"
+    }
 }
 
 private struct SettingsView: View {
@@ -219,7 +244,9 @@ private struct SettingsView: View {
     @ObservedObject var gameCenter: GameCenterService
     let availability: LocalModelAvailability
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var ads: AdsService
     @State private var confirmReset = false
+    @State private var privacyOptionsError = false
 
     var body: some View {
         NavigationStack {
@@ -262,6 +289,23 @@ private struct SettingsView: View {
                             confirmReset = true
                         }
                     }
+
+                    if ads.privacyOptionsRequired {
+                        Section("PRIVACY") {
+                            Button("Privacy choices", systemImage: "hand.raised.fill") {
+                                Task {
+                                    do {
+                                        try await ads.presentPrivacyOptions()
+                                    } catch {
+                                        privacyOptionsError = true
+                                    }
+                                }
+                            }
+                            Text("Review or change the advertising privacy choices available for your region.")
+                                .font(.footnote)
+                                .foregroundStyle(PromptHeistDesign.secondaryText)
+                        }
+                    }
                 }
                 .scrollContentBackground(.hidden)
             }
@@ -276,6 +320,11 @@ private struct SettingsView: View {
                 Button("Cancel", role: .cancel) {}
             } message: {
                 Text("Best scores and unlocked levels will be removed from this iPhone.")
+            }
+            .alert("Privacy choices unavailable", isPresented: $privacyOptionsError) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Please check your connection and try again.")
             }
         }
         .preferredColorScheme(.dark)

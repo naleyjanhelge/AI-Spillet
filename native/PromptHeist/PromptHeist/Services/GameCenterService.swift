@@ -8,11 +8,17 @@ enum GameCenterIdentifiers {
         2: "game.promptheist.mobile.leaderboard.chapter2",
         3: "game.promptheist.mobile.leaderboard.chapter3",
         4: "game.promptheist.mobile.leaderboard.pack4",
+        5: "game.promptheist.mobile.leaderboard.pack5",
+        6: "game.promptheist.mobile.leaderboard.black_box",
+        7: "game.promptheist.mobile.leaderboard.after_hours",
+        8: "game.promptheist.mobile.leaderboard.system_override",
     ]
-    static let allLevels = "game.promptheist.mobile.leaderboard.campaign"
+    static let allLevels = "game.promptheist.mobile.leaderboard.campaign_40"
 
     static let firstSecret = "game.promptheist.mobile.achievement.first_breach"
     static let underPar = "game.promptheist.mobile.achievement.under_par_run"
+    static let blackBoxUnlocked = "game.promptheist.mobile.achievement.black_box_unlocked"
+    static let campaignComplete = "game.promptheist.mobile.achievement.campaign_complete"
 }
 
 @MainActor
@@ -63,6 +69,12 @@ final class GameCenterService: NSObject, ObservableObject {
         }
         if progress.hasUnderParWin {
             await reportAchievement(GameCenterIdentifiers.underPar)
+        }
+        if progress.unlockedLevel >= 26 {
+            await reportAchievement(GameCenterIdentifiers.blackBoxUnlocked)
+        }
+        if progress.completedLevelCount == LevelCatalog.levels.count {
+            await reportAchievement(GameCenterIdentifiers.campaignComplete)
         }
     }
 

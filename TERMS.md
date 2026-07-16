@@ -1,7 +1,7 @@
 # Prompt Heist Terms of Use
 
 **Effective date:** July 15, 2026  
-**Contact:** [Prompt Heist Support](https://naleyjanhelge.github.io/AI-Spillet/support.html)
+**Contact:** [Prompt Heist Support](https://naleyjanhelge.github.io/Prompt-Heist/support.html)
 
 By downloading or using Prompt Heist, you agree to these terms. If you do not
 agree, do not use the app.
@@ -59,6 +59,6 @@ loss arising from use of the app or reliance on generated content.
 We may update the app or these terms to reflect product, platform, or legal
 changes. Material changes will be identified by a new effective date. For
 questions, use the
-[Prompt Heist support page](https://naleyjanhelge.github.io/AI-Spillet/support.html).
+[Prompt Heist support page](https://naleyjanhelge.github.io/Prompt-Heist/support.html).
 GitHub support requests are public, so never include personal, sensitive, or
 confidential information.

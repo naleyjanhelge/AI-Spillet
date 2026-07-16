@@ -9,7 +9,10 @@ Flutter app remains untouched while the native version is validated.
 - Persuade NOX to reveal one harmless fictional secret.
 - Win in as few prompts as possible.
 - Choose **Limit** for a finite prompt budget or **Chill** for unlimited prompts.
-- Earn one to three stars and immediately continue to the next level.
+- Adapt to special rules such as one-shot, forbidden words, questions only,
+  statements only, word limits, role-play, and contradiction traps.
+- Complete optional bonus goals, earn one to three stars, and immediately
+  continue to the next level.
 
 There is no room exploration, inventory, cloud account, or server AI in this
 version. Levels are data entries in `PromptHeist/Models/HeistLevel.swift`, so
@@ -32,6 +35,19 @@ The app checks all Foundation Models availability states:
 The first-run screen explains that Apple Intelligence is required and that
 prompts remain on-device.
 
+## Advertising
+
+The app shows one 320×50 AdMob banner at the bottom of the Home screen. The
+banner is removed while a level is open. Debug builds always use Google's iOS
+banner test unit, while Release builds use the production unit configured for
+Prompt Heist. UMP consent is gathered before the first ad request, with regional
+privacy choices available from Settings when required.
+
+Firebase Analytics Core records level starts and outcomes without prompt text
+or IDFA collection capability. Firebase is initialized before UMP so consent
+mode can apply the regional analytics-storage choice when it is enabled in the
+AdMob console.
+
 ## Game Center
 
 Game Center authentication starts at launch but remains optional. Completed
@@ -45,12 +61,18 @@ Create these leaderboards in App Store Connect before testing:
 - `game.promptheist.mobile.leaderboard.chapter2`
 - `game.promptheist.mobile.leaderboard.chapter3`
 - `game.promptheist.mobile.leaderboard.pack4`
-- `game.promptheist.mobile.leaderboard.campaign`
+- `game.promptheist.mobile.leaderboard.pack5`
+- `game.promptheist.mobile.leaderboard.black_box`
+- `game.promptheist.mobile.leaderboard.after_hours`
+- `game.promptheist.mobile.leaderboard.system_override`
+- `game.promptheist.mobile.leaderboard.campaign_40`
 
 Create these achievements:
 
 - `game.promptheist.mobile.achievement.first_breach`
 - `game.promptheist.mobile.achievement.under_par_run`
+- `game.promptheist.mobile.achievement.black_box_unlocked`
+- `game.promptheist.mobile.achievement.campaign_complete`
 
 ## Device requirements
 
@@ -89,7 +111,7 @@ TestFlight submission.
 
 - Bundle ID: `game.promptheist.mobile`
 - Marketing version: `3.0.0`
-- Build: `8`
+- Build: `11`
 - Development team: `AV4XNY669E`
 
 The native app intentionally retains the existing bundle ID so it can use the

@@ -10,10 +10,10 @@ story campaign.
 The current app lives in [`native/PromptHeist`](native/PromptHeist) and is built
 with SwiftUI, Foundation Models, Liquid Glass, and GameKit.
 
-- 20 data-driven levels across four packs
+- 40 data-driven levels across eight packs, including two post-campaign packs
 - **Limit** mode with a finite prompt budget
 - **Chill** mode with unlimited attempts
-- One-to-three stars and local best prompt counts
+- One-to-three stars, optional bonus goals, and local best prompt counts
 - On-device NOX dialogue with no backend or network AI fallback
 - Game Center lowest-score leaderboards, achievements, and friend comparisons
 - iPhone only, iOS 26+, Apple Intelligence-compatible hardware required
@@ -30,7 +30,7 @@ xcodebuild \
 ```
 
 The app keeps the existing bundle ID `game.promptheist.mobile`. Current native
-release metadata is **3.0.0 (build 8)**.
+release metadata is **3.0.0 (build 11)**.
 
 ## Game Center setup
 
@@ -41,17 +41,23 @@ Enable Game Center for the bundle ID and configure these leaderboards with
 - `game.promptheist.mobile.leaderboard.chapter2`
 - `game.promptheist.mobile.leaderboard.chapter3`
 - `game.promptheist.mobile.leaderboard.pack4`
-- `game.promptheist.mobile.leaderboard.campaign`
+- `game.promptheist.mobile.leaderboard.pack5`
+- `game.promptheist.mobile.leaderboard.black_box`
+- `game.promptheist.mobile.leaderboard.after_hours`
+- `game.promptheist.mobile.leaderboard.system_override`
+- `game.promptheist.mobile.leaderboard.campaign_40`
 
 Achievements:
 
 - `game.promptheist.mobile.achievement.first_breach`
 - `game.promptheist.mobile.achievement.under_par_run`
+- `game.promptheist.mobile.achievement.black_box_unlocked`
+- `game.promptheist.mobile.achievement.campaign_complete`
 
 ## Website and App Store material
 
 The GitHub Pages site lives in [`docs`](docs) and is published at
-<https://naleyjanhelge.github.io/AI-Spillet/>. Copy-ready store text and release
+<https://naleyjanhelge.github.io/Prompt-Heist/>. Copy-ready store text and release
 privacy notes are in [`APP_STORE_METADATA.md`](APP_STORE_METADATA.md) and
 [`APP_STORE_PRIVACY.md`](APP_STORE_PRIVACY.md).
 

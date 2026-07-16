@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://naleyjanhelge.github.io/AI-Spillet/sitemap.xml
+Sitemap: https://naleyjanhelge.github.io/Prompt-Heist/sitemap.xml
